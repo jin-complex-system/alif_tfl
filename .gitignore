@@ -1,3 +1,9 @@
+
+## Json
+*.json
+
+## C++
+
 # Prerequisites
 *.d
 

@@ -1,0 +1,16 @@
+out/
+tmp/
+*.cbuild-idx.yml
+*.cbuild-set.yml
+*.cbuild.yml
+*.clangd
+
+**/build/
+build*/
+.*project
+.settings
+.clang-format
+
+*.bkp
+*.orig
+*.pyc
