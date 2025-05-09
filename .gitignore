@@ -1,6 +1,6 @@
 
-## Json
-*.json
+## Visual Studio Code
+vcpkg-configuration.json
 
 ## C++
 
