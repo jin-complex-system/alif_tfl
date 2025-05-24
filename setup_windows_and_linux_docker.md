@@ -118,15 +118,14 @@ xxd -i CNN_litert_vela.tflite > CNN_litert_vela.h
 10. Create a build directory for M55-HE core for a Generic Inference Runner
 ```bash
 cd /mydir/alif_ml-embedded-evaluation-kit
-mkdir build_he_infrun && cd build_he_infrun
+mkdir build_he_infrun_CNN_vela && cd build_he_infrun_CNN_vela
 ```
 
 11. Address known issues as described in [known_isses.md](/known_issues.md)
 
-12. Configure the build using `CMake` and build:
+12. Configure build using `CMake` and build:
 ```bash
 cmake .. \
-  -Dinference_runner_MODEL_TFLITE_PATH=/mydir/alif_ml-embedded-evaluation-kit/models/CNN_litert_vela.tflite \
   -DUSE_CASE_BUILD=inference_runner \
   -DTARGET_PLATFORM=ensemble \
   -DGLCD_UI=OFF \
@@ -136,20 +135,16 @@ cmake .. \
   -DLINKER_SCRIPT_NAME=ensemble-RTSS-HE-infrun \
   -DCMAKE_TOOLCHAIN_FILE=scripts/cmake/toolchains/bare-metal-gcc.cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DLOG_LEVEL=LOG_LEVEL_Debug \
-  -DCONSOLE_UART=2
+  -DLOG_LEVEL=LOG_LEVEL_INFO \
+  -DCONSOLE_UART=2 \
+  -Dinference_runner_MODEL_TFLITE_PATH=/mydir/alif_ml-embedded-evaluation-kit/models/CNN_litert_vela.tflite 
 make -j16
-```
 
-13. If necessary, convert your `.axf` file into a binary file:
-```bash
-cd bin
-arm-none-eabi-objcopy -O binary ethos-u-inference_runner.axf CNN_litert_vela_inference_runner.bin
-```
+# Convert your `.axf` file into a binary file
+arm-none-eabi-objcopy -O binary bin/ethos-u-inference_runner.axf bin/CNN_litert_vela_inference_runner.bin
 
-14. Offload your binary directory:
-```bash
-cp sectors/inference_runner/mram.bin CNN_litert_vela_inference_runner.bin
+# Alternatively, you can just use mram.bin
+# cp sectors/inference_runner/mram.bin CNN_litert_vela_inference_runner.bin
 cp CNN_litert_vela_inference_runner.bin <path_to_windows_folder>
 ```
 
@@ -198,6 +193,7 @@ cp .\sectors\inference_runner\CNN_litert_vela_inference_runner.bin C:\app-releas
 ```
 
 2. Add [`my_inference_runner.json`](helper_files/my_inference_runner.json) into `C:\app-release-exec\build\config`:
+- Note that MRAM start address is at `0x80008000`
 
 3. Navigate to `C:\app-release-exec`:
 ```PowerShell
@@ -216,5 +212,5 @@ cd C:\app-release-exec\
 ./app-write-mram -p
 ```
 
-7. Connect to UART based on COM port on Device Manager
-- Baud Rate: 55000
+7. Connect to UART2 based on COM port (second port usually) on Device Manager
+- Baud Rate: 115200
