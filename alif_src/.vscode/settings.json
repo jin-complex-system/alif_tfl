@@ -6,4 +6,13 @@
     "cmake.configureOnOpen": false,
 
     "cortex-debug.variableUseNaturalFormat": false,
+    "cmsis-csolution.actions": [
+        {
+            "path": "alif.csolution.yml",
+            "target": "HE",
+            "config": {
+                "run": "Program with Security Toolkit (select COM port)"
+            }
+        }
+    ],
 }
