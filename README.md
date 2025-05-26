@@ -1,3 +1,6 @@
 # alif_tfl
 
-To setup a project with Windows 11 and Linux docker, see [setup_windows_and_linux_docker.md](/setup_windows_and_linux_docker.md)
+## How to run the project with Visual Studio Code
+
+1. Using Visual Studio Code, open the directory at [`alif_src`](alif_src)
+2. Configure instructions according to README.md provided
