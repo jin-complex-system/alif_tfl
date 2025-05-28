@@ -19,14 +19,16 @@
                 "cbuild ${command:cmsis-csolution.getSolutionPath} --clean;",
                 "rm -f ./blinky/*.cbuild.yml;",
                 "rm -f ./hello/*.cbuild.yml;",
-                "rm -f ./hello_rtt/*.cbuild.yml;"
+                "rm -f ./hello_rtt/*.cbuild.yml;",
+                "rm -f ./preprocess/*.cbuild.yml;"
             ],
             "windows": {
                 "command": [
                     "cbuild ${command:cmsis-csolution.getSolutionPath} --clean;",
                     "rm -Force ./blinky/*.cbuild.yml;",
                     "rm -Force ./hello/*.cbuild.yml;",
-                    "rm -Force ./hello_rtt/*.cbuild.yml;"
+                    "rm -Force ./hello_rtt/*.cbuild.yml;",
+                    "rm -Force ./preprocess/*.cbuild.yml;"
                 ]
             },
             "problemMatcher": []
@@ -47,10 +49,10 @@
             "label": "Prepare program with Security Toolkit",
             "type": "shell",
             "command": [
-                    "outputElfFilename='${command:cmsis-csolution.getBinaryFile}';",
-                    "cp \"${outputElfFilename/%???/bin}\" '${config:alif.setools.root}/build/images/alif-img.bin';",
-                    "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';"
-                ],
+                "outputElfFilename='${command:cmsis-csolution.getBinaryFile}';",
+                "cp \"${outputElfFilename/%???/bin}\" '${config:alif.setools.root}/build/images/alif-img.bin';",
+                "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';"
+            ],
             "windows": {
                 "command": [
                     "$outputElfFilename='${command:cmsis-csolution.getBinaryFile}';",
@@ -64,7 +66,9 @@
         {
             "label": "Program with Security Toolkit",
             "type": "shell",
-            "options": {"cwd": "${config:alif.setools.root}"},
+            "options": {
+                "cwd": "${config:alif.setools.root}"
+            },
             "command": [
                 "./app-gen-toc -f alif-img.json;",
                 "./app-write-mram -p;",
@@ -77,7 +81,9 @@
         {
             "label": "Program with Security Toolkit (select COM port)",
             "type": "shell",
-            "options": {"cwd": "${config:alif.setools.root}"},
+            "options": {
+                "cwd": "${config:alif.setools.root}"
+            },
             "command": [
                 "./app-gen-toc -f alif-img.json;",
                 "./app-write-mram -p -d;",
@@ -90,7 +96,9 @@
         {
             "label": "Update TOC with Security Toolkit",
             "type": "shell",
-            "options": {"cwd": "${config:alif.setools.root}"},
+            "options": {
+                "cwd": "${config:alif.setools.root}"
+            },
             "command": [
                 "./app-gen-toc -f alif-img.json;",
                 "./app-write-mram -S;",
@@ -103,21 +111,78 @@
         {
             "label": "Install debug stubs with Security Toolkit",
             "type": "shell",
-            "options": {"cwd": "${config:alif.setools.root}"},
+            "options": {
+                "cwd": "${config:alif.setools.root}"
+            },
             "command": [
                 "./app-gen-toc -f ./build/config/app-cpu-stubs.json;",
-                "./app-write-mram;",
+                "./app-write-mram;"
             ],
             "problemMatcher": []
         },
         {
             "label": "Install debug stubs with Security Toolkit (select COM port)",
             "type": "shell",
-            "options": {"cwd": "${config:alif.setools.root}"},
+            "options": {
+                "cwd": "${config:alif.setools.root}"
+            },
             "command": [
                 "./app-gen-toc -f ./build/config/app-cpu-stubs.json;",
-                "./app-write-mram -d;",
+                "./app-write-mram -d;"
             ],
+            "problemMatcher": []
+        },
+        {
+            "label": "CMSIS Erase",
+            "type": "shell",
+            "command": "pyocd",
+            "args": [
+                "erase",
+                "--probe",
+                "cmsisdap:",
+                "--chip",
+                "--cbuild-run",
+                "${command:cmsis-csolution.getCbuildRunFile}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "CMSIS Load",
+            "type": "shell",
+            "command": "pyocd",
+            "args": [
+                "load",
+                "--probe",
+                "cmsisdap:",
+                "--cbuild-run",
+                "${command:cmsis-csolution.getCbuildRunFile}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "CMSIS Run",
+            "type": "shell",
+            "command": "pyocd",
+            "args": [
+                "gdbserver",
+                "--probe",
+                "cmsisdap:",
+                "--connect",
+                "attach",
+                "--persist",
+                "--reset-run",
+                "--cbuild-run",
+                "${command:cmsis-csolution.getCbuildRunFile}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "CMSIS Load+Run",
+            "dependsOn": [
+                "CMSIS Load",
+                "CMSIS Run"
+            ],
+            "dependsOrder": "sequence",
             "problemMatcher": []
         }
     ]

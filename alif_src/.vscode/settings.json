@@ -11,8 +11,10 @@
             "path": "alif.csolution.yml",
             "target": "HE",
             "config": {
-                "run": "Program with Security Toolkit (select COM port)"
+                "run": "Program with Security Toolkit (select COM port)",
+                "debug": "Alif Ensemble Debug (Cortex-Debug)"
             }
         }
     ],
+    "debug.hideSlowPreLaunchWarning": true,
 }

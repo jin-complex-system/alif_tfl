@@ -6,13 +6,13 @@ cbuild-run:
   device: Alif Semiconductor::AE722F80F55D5LS
   device-pack: AlifSemiconductor::Ensemble@1.3.4
   output:
-    - file: out/blinky/HE/debug/blinky.elf
-      info: generate by blinky.debug+HE
+    - file: out/preprocess/HE/debug/preprocess.elf
+      info: generate by preprocess.debug+HE
       type: elf
       load: image+symbols
       pname: M55_HE
-    - file: out/blinky/HE/debug/blinky.bin
-      info: generate by blinky.debug+HE
+    - file: out/preprocess/HE/debug/preprocess.bin
+      info: generate by preprocess.debug+HE
       type: bin
       load: none
       pname: M55_HE
