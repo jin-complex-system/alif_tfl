@@ -12,7 +12,6 @@
             "target": "HE",
             "config": {
                 "run": "Program with Security Toolkit (select COM port)",
-                "debug": "Alif Ensemble Debug (Cortex-Debug)"
             }
         }
     ],
