@@ -1,6 +1,3 @@
 [submodule "dsp_preprocess"]
 	path = alif_src/libs/dsp_preprocessing
 	url = https://github.com/jin-complex-system/dsp_preprocessing
-[submodule "alif_src/libs/CMSIS-DSP"]
-	path = alif_src/libs/CMSIS-DSP
-	url = https://github.com/ARM-software/CMSIS-DSP

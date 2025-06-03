@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "*.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "algorithm": "c",
+        "xiosbase": "c",
+        "xlocale": "c",
+        "xutility": "c"
     },
 
     "cmake.configureOnOpen": false,

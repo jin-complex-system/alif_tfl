@@ -69,21 +69,23 @@ cd alif_src/libs
 git submodule add --name dsp_preprocess https://github.com/jin-complex-system/dsp_preprocessing
 cd dsp_preprocessing && git checkout <desired_branch>
 ```
+- For some versions, you may need to change the following inside `dsp_preprocessing/audio_dsp/src/hann_window_compute.c` to the following:
+```C
+const double
+MY_2_PI = 6.28318530717958623199592693708837032318115234375;
 
-7. Pull in other libraries into `alif_src/libs`:
-```bash
-cd alif_src/libs
-git submodule add https://github.com/ARM-software/CMSIS-DSP
-cd CMSIS-DSP && git checkout v1.16.2
+// const double
+// MY_2_PI = 2 * M_PI;
 ```
 
-8. Inside your new directory `preprocess`, change `preprocess.cproject.yml` to the following:
+7. Inside your new directory `preprocess`, change `preprocess.cproject.yml` to the following:
 ```yml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/tools/projmgr/2.6.0/tools/projmgr/schemas/cproject.schema.json
 project:
   groups:
     - group: App
       files:
+        - file: parameters.h
         - file: main.c
     - group: Board
       files:
@@ -103,6 +105,13 @@ project:
         - file: ../libs/FatFS/ffunicode.c
     - group: dsp_preprocess
       files:
+        # # supporting library for dsp_preprocess
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.h
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.c
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
+        # - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
+      
         # utils
         - file: ../libs/dsp_preprocessing/utils/include/convert_complex.h
         - file: ../libs/dsp_preprocessing/utils/src/convert_complex.c
@@ -117,13 +126,15 @@ project:
         - file: ../libs/dsp_preprocessing/statistics/include/statistics.h
         - file: ../libs/dsp_preprocessing/statistics/src/statistics.c
 
-        # # audio_dsp
+        # audio_dsp
         - file: ../libs/dsp_preprocessing/audio_dsp/include/audio_dsp_fft.h
         - file: ../libs/dsp_preprocessing/audio_dsp/src/audio_dsp_fft.c
         - file: ../libs/dsp_preprocessing/audio_dsp/include/hann_window_compute.h
         - file: ../libs/dsp_preprocessing/audio_dsp/src/hann_window_compute.c
         - file: ../libs/dsp_preprocessing/audio_dsp/include/mel_spectrogram.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_get_precomputed.c
         - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_spectrogram.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_utils.c
         - file: ../libs/dsp_preprocessing/audio_dsp/include/power_spectrum.h
         - file: ../libs/dsp_preprocessing/audio_dsp/src/power_spectrum.c
 
@@ -150,26 +161,26 @@ project:
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
 
-    # utils
+    # # dsp_preprocess: supporting library for dsp_preprocess
+    # - ../libs/dsp_preprocessing/external/kissfft/
+
+    # dsp_preprocess: utils
     - ../libs/dsp_preprocessing/utils/include/
 
-    # statistics
+    # dsp_preprocess: statistics
     - ../libs/dsp_preprocessing/statistics/include/
 
-    # audio_dsp
+    # dsp_preprocess: audio_dsp
     - ../libs/dsp_preprocessing/audio_dsp/include/
 
-    # audio_dsp constants - hann window
+    # dsp_preprocess: audio_dsp constants - hann window
     - ./libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_no_scale_1024.h
 
-    # audio_dsp constants - mel constants
+    # dsp_preprocess: audio_dsp constants - mel constants
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_weights
-
-    # Other dependencies
-    - ../libs/CMSIS-DSP/Include/
 
   components:
     # needed for Alif Ensemble support
@@ -227,5 +238,16 @@ project:
     # - component: AlifSemiconductor::Device:Retarget IO:STDERR
     # - component: AlifSemiconductor::Device:Retarget IO:STDIN
     # - component: AlifSemiconductor::Device:Retarget IO:STDOUT
+
+    - component: ARM::CMSIS:DSP
+    # - component: ARM::CMSIS:NN 
+
 ```
+
+8. See [Known Issues](#known-issues) for any issues during building process
+
+## Known Issues
+
+1. [float16 support failure in CMSIS-DSP](github.com/ARM-software/CMSIS-DSP/issues/242) with [float16_issue.md](/float16_issue.md)
+2. Pass C flag `-flax-vector-conversions`
 

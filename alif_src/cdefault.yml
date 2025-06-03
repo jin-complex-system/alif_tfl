@@ -5,6 +5,9 @@ default:
       C:
         - -std=c99
         - -fdata-sections
+        - -flax-vector-conversions
+        - -DDISABLEFLOAT16
+        - -Ofast
 
       Link:
         - --specs=nosys.specs

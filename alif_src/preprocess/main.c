@@ -5,6 +5,7 @@
 #include "board.h"
 #include "stdio.h"
 #include "string.h"
+#include "parameters.h"
 
 #include "uart_tracelib.h"
 #include "fault_handler.h"
@@ -17,6 +18,12 @@ static void uart_callback(uint32_t event) {
 #include "diskio.h"
 #include "se_services_port.h"
 #include "pinconf.h"
+
+/// Audio DSP
+#include "hann_window_scale_1024.h"
+#include "audio_dsp_fft.h"
+#include "power_spectrum.h"
+#include "mel_spectrogram.h"
 
 #define _GET_DRIVER_REF(ref, peri, chan) \
     extern ARM_DRIVER_##peri Driver_##peri##chan; \
@@ -56,6 +63,17 @@ uint32_t error_code = SERVICES_REQ_SUCCESS;
 unsigned char filebuffer[(SD_BLK_SIZE*NUM_BLK_TEST) + 1] __attribute__((section("sd_dma_buf"))) __attribute__((aligned(512)));
 FATFS sd_card __attribute__((section("sd_dma_buf"))) __attribute__((aligned(512)));
 FIL test_file;
+
+/// Audio DSP
+#define INPUT_BUFFER_LENGTH AUDIO_BUFFER_MINIMUM_LENGTH
+audio_data_type
+input_buffer[INPUT_BUFFER_LENGTH];
+
+float
+power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH];
+
+float
+mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH];
 
 void
 sd_card_fatfs(void) {
@@ -250,6 +268,43 @@ sd_card_fatfs(void) {
     }
 }
 
+void
+preprocess_buffer(void) {
+	/// Compute mel spectrogram
+    #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
+    const uint16_t num_iterations = NUM_SECONDS_AUDIO;
+    #else
+    const uint16_t num_iterations = NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO;
+    #endif // NUM_SECONDS_AUDIO
+
+    for (uint16_t iterator = 0; iterator < num_iterations; iterator++) {
+        for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
+            const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+
+            compute_power_spectrum_audio_samples(
+                &input_buffer[audio_iterator],
+                AUDIO_FRAME_LENGTH,
+                power_spectrum_buffer,
+                POWER_SPECTRUM_BUFFER_LENGTH,
+                NULL,
+                0u,
+                0.0f,
+                HANN_WINDOW_SCALE_1024_BUFFER,
+                HANN_WINDOW_SCALE_1024_BUFFER_LENGTH
+            );
+
+            compute_power_spectrum_into_mel_spectrogram(
+                &power_spectrum_buffer[0],
+                POWER_SPECTRUM_BUFFER_LENGTH,
+                &mel_spectrogram_buffer[frame_iterator * N_MELS],
+                N_FFT,
+                SAMPLING_RATE_PER_SECOND,
+                N_MELS
+            );
+        }
+    }
+}
+
 int main (void) {
     // Init pinmux using boardlib
     BOARD_Pinmux_Init();
@@ -291,7 +346,20 @@ int main (void) {
 
     gpio_r->SetValue(BOARD_LEDRGB0_R_PIN_NO, GPIO_PIN_OUTPUT_STATE_HIGH);
     sd_card_fatfs();
-    gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_HIGH);
+
+    initialise_power_spectrum(N_FFT);
+
+    #if NUM_SECONDS_DESIRED_AUDIO == NUM_SECONDS_AUDIO
+    printf("num frames: %lu\r\n", NUM_FRAMES);
+    #else
+    printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
+    #endif // NUM_SECONDS_DESIRED_AUDIO
+
+    while(1) {
+        preprocess_buffer();
+        gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE);
+        // printf("Done preprocessing\r\n");
+    }
 
     while (1) __WFI();
 }
