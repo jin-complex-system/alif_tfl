@@ -1,10 +1,28 @@
 # alif_tfl
 
+# Setup Project
+
 ## How to run the project with Visual Studio Code
 
 1. Using Visual Studio Code, open the directory at [`alif_src`](alif_src)
 2. Configure instructions according to README.md provided
+3. Pull the necessary submodules:
+```bash
+git submodule update --init --recursive
+```
 
+## How to Program on Visual Studio Code
+
+1. Determine your COM port of your device. The lower COM port is for programming while the upper COM port is for UART messages
+- On this example, `COM6` is for programming and `COM9` is `UART2` for Alif Ensemble Dev Kit HE core output
+2. Open a UART program (like Putty) to the UART (`COM9`), with the settings at 115200 baud rate 
+3. Navigate to CMSIS Extension
+4. Click on the 'Buid Solution` icon (looks like a hammer)
+5. Press `F1` on your keyboard and select `Tasks: Run Task`
+6. Select `Program with Security Toolkit (select COM port)`
+7. On the terminal, when the COM port list shows up, select the lowest COM port
+- Type out the entire name `COM6` rather than just `6`
+8. When programming is finished, view the UART console output
 
 # How to create a new project `preprocess`
 1. Copy `blinky` project as it is and rename the directory to `preprocess`
@@ -138,16 +156,9 @@ project:
     # - component: AlifSemiconductor::Device:Retarget IO:STDIN
     # - component: AlifSemiconductor::Device:Retarget IO:STDOUT
 ```
-
-# How to Program on Visual Studio Code
-
-1. Determine your COM port of your device. The lower COM port is for programming while the upper COM port is for UART messages
-- On this example, `COM6` is for programming and `COM9` is `UART2` for Alif Ensemble Dev Kit HE core output
-2. Open a UART program (like Putty) to the UART (`COM9`), with the settings at 115200 baud rate 
-3. Navigate to CMSIS Extension
-4. Click on the 'Buid Solution` icon (looks like a hammer)
-5. Press `F1` on your keyboard and select `Tasks: Run Task`
-6. Select `Program with Security Toolkit (select COM port)`
-7. On the terminal, when the COM port list shows up, select the lowest COM port
-- Type out the entire name `COM6` rather than just `6`
-8. When programming is finished, view the UART console output
+7. Pull in the DSP Preprocessing Library into `alif_src/libs`:
+```bash
+cd alif_src/libs
+git submodule add --name dsp_preprocess https://github.com/jin-complex-system/dsp_preprocessing
+cd dsp_preprocessing && git checkout <desired_branch>
+```
