@@ -8,17 +8,31 @@ project:
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
         - file: ../libs/board/appkit_gen2/board_init.c
+        - file: ../libs/common_app_utils/logging/uart_tracelib.c
+        - file: ../libs/common_app_utils/logging/retarget.c
+        - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+    - group: FatFS
+      files:
+        - file: ../libs/FatFS/diskio.h
+        - file: ../libs/FatFS/diskio.c
+        - file: ../libs/FatFS/ff.h
+        - file: ../libs/FatFS/ff.c
+        - file: ../libs/FatFS/ffconf.h
+        - file: ../libs/FatFS/ffsystem.c
+        - file: ../libs/FatFS/ffunicode.c
 
   output:
     base-name: $Project$
     type:
       - elf
       - bin
-
   add-path:
     - .
     - ../board/
     - ../libs/board/
+    - ../libs/FatFS/
+    - ../libs/common_app_utils/logging
+    - ../libs/common_app_utils/fault_handler
   components:
     # needed for Alif Ensemble support
     - component: AlifSemiconductor::Device:Startup&C Startup
@@ -42,7 +56,7 @@ project:
     # - component: AlifSemiconductor::Device:SOC Peripherals:I3C
     # - component: AlifSemiconductor::Device:SOC Peripherals:LPI2C
     # - component: AlifSemiconductor::Device:SOC Peripherals:LPTIMER
-    # - component: AlifSemiconductor::Device:SOC Peripherals:MHU
+    - component: AlifSemiconductor::Device:SOC Peripherals:MHU
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI DSI CSI2 DPHY
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI CSI2
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI DSI
@@ -51,17 +65,17 @@ project:
     # - component: AlifSemiconductor::Device:SOC Peripherals:PDM
     - component: AlifSemiconductor::Device:SOC Peripherals:PINCONF
     # - component: AlifSemiconductor::Device:SOC Peripherals:RTC
-    # - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
+    - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
     # - component: AlifSemiconductor::Device:SOC Peripherals:SPI
-    # - component: AlifSemiconductor::Device:SOC Peripherals:USART
+    - component: AlifSemiconductor::Device:SOC Peripherals:USART
     # - component: AlifSemiconductor::Device:SOC Peripherals:UTIMER
     # - component: AlifSemiconductor::Device:SOC Peripherals:WDT
 
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:core
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:utility
     # - component: AlifSemiconductor::Device:OSPI HYPERRAM XIP
-    # - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
-    # - component: AlifSemiconductor::Device:SE runtime Services:core&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:core&Source
 
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor MT9M114
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor ARX3A0
