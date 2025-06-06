@@ -11,6 +11,9 @@ project:
         - file: led/led.c
         - file: sd_card/sd_card.h
         - file: sd_card/sd_card.c
+        - file: inference/inference_definitions.h
+        - file: inference/inference_tf.h
+        - file: inference/inference_tf.cpp
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c

@@ -4,6 +4,7 @@
 
 #include <sd_card.h>
 #include <led.h>
+#include <inference_tf.h>
 
 #include <parameters.h>
 
@@ -74,6 +75,7 @@ void
 app_setup(void) {
 
     setup_led();
+    inference_tf_setup();
 
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
