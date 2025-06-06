@@ -5,7 +5,8 @@
         "algorithm": "c",
         "xiosbase": "c",
         "xlocale": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "new": "cpp"
     },
 
     "cmake.configureOnOpen": false,

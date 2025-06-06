@@ -6,8 +6,8 @@ default:
         - -std=c99
         - -fdata-sections
         - -flax-vector-conversions
-        - -DDISABLEFLOAT16
-        - -Ofast
+        - -fno-exceptions
+        - -fno-rtti
 
       Link:
         - --specs=nosys.specs

@@ -50,14 +50,80 @@ git submodule update --init --recursive
             "problemMatcher": []
         },
 ```
-3. Inside [alif.csolution.yml](/alif_src/alif.csolution.yml), add the following line at line 45:
+3. Change [alif.csolution.yml](/alif_src/alif.csolution.yml) to the following:
 ```yml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/tools/projmgr/2.6.0/tools/projmgr/schemas/csolution.schema.json
+solution:
+  created-for: cmsis-toolbox@2.6.0
+  cdefault:
+
+  # List of tested compilers that can be selected
+  select-compiler:
+    - compiler: GCC
+
+  # Select used compiler
+  compiler: GCC
+  misc:
+  - C:
+      - -std=c99
+      - -fdata-sections
+      - -flax-vector-conversions
+      - -fno-exceptions
+      - -fno-rtti      
+
+  packs:
+    - pack: AlifSemiconductor::Ensemble@1.3.4
+    
+    # CMSIS and ARM
+    - pack: ARM::CMSIS@6.0.0
+    - pack: ARM::CMSIS-DSP@1.16.2
+    - pack: ARM::CMSIS-NN # Unsure which version
+    - pack: ARM::ethos-u-core-driver@1.24.11
+
+    # TensorFlow Lite Micro
+    - pack: tensorflow::flatbuffers@1.24.11
+    - pack: tensorflow::gemmlowp@1.24.11
+    - pack: tensorflow::kissfft@1.24.11
+    - pack: tensorflow::ruy@1.24.11
+    - pack: tensorflow::tensorflow-lite-micro@1.24.11
+
+  target-types:
+    - type: HE
+      device: Alif Semiconductor::AE722F80F55D5LS:M55_HE
+      define:
+        - "CORE_M55_HE"
+    - type: HP
+      device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
+      define:
+        - "CORE_M55_HP"
+
+  build-types:
+    - type: debug
+      optimize: speed
+      debug: off
+      define:
+        - _DEBUG
+    - type: release
+      optimize: speed
+      debug: off
+
+  define:
+  # Place CMake options here?
+    - UNICODE
+    - _UNICODE
+    - ETHOSU55
+    - DISABLEFLOAT16
+    - Ofast
+
   projects:
     - project: blinky/blinky.cproject.yml
     - project: hello/hello.cproject.yml
     - project: hello_rtt/hello_rtt.cproject.yml
     - project: preprocess/preprocess.cproject.yml
+
 ```
+- Note that versions of different CMSIS-Packs may need to be changed in the future
+
 4. Locate the CMSIS packs. In Windows, it is located in `C:\Users\$USER\AppData\Local\Arm\Packs\AlifSemiconductor\Ensemble\1.3.4`, where the current version is `1.3.4`
 
 5. Copy over the following directories to `alif_src\libs`:
@@ -239,9 +305,18 @@ project:
     # - component: AlifSemiconductor::Device:Retarget IO:STDIN
     # - component: AlifSemiconductor::Device:Retarget IO:STDOUT
 
+    # CMSIS
     - component: ARM::CMSIS:DSP
-    # - component: ARM::CMSIS:NN 
+    - component: ARM::CMSIS:NN Lib
 
+    # TensorFlow Lite Micro
+    - component: Machine Learning:TensorFlow:Kernel&Ethos-U
+    - component: Arm::Machine Learning:NPU Support:Ethos-U Driver&Generic U55
+    - component: tensorflow::Data Exchange:Serialization:flatbuffers
+    - component: tensorflow::Data Processing:Math:gemmlowp fixed-point
+    - component: tensorflow::Data Processing:Math:kissfft
+    - component: tensorflow::Data Processing:Math:ruy
+    - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
 ```
 
 8. See [Known Issues](#known-issues) for any issues during building process
@@ -250,4 +325,10 @@ project:
 
 1. [float16 support failure in CMSIS-DSP](github.com/ARM-software/CMSIS-DSP/issues/242) with [float16_issue.md](/float16_issue.md)
 2. Pass C flag `-flax-vector-conversions`
+3. Address [TFL Micro issues](tfl_micro_issues.md)
+
+# References
+
+- [ML Developers Guide for Cortex-M Processors
+and Ethos-U NPU](https://documentation-service.arm.com/static/6821edae8f79851ff2c3e485?token=)
 

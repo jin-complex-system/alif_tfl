@@ -157,5 +157,15 @@ project:
     # - component: AlifSemiconductor::Device:Retarget IO:STDIN
     # - component: AlifSemiconductor::Device:Retarget IO:STDOUT
 
+    # CMSIS
     - component: ARM::CMSIS:DSP
-    # - component: ARM::CMSIS:NN 
+    - component: ARM::CMSIS:NN Lib
+
+    # TensorFlow Lite Micro
+    - component: Machine Learning:TensorFlow:Kernel&Ethos-U
+    - component: Arm::Machine Learning:NPU Support:Ethos-U Driver&Generic U55
+    - component: tensorflow::Data Exchange:Serialization:flatbuffers
+    - component: tensorflow::Data Processing:Math:gemmlowp fixed-point
+    - component: tensorflow::Data Processing:Math:kissfft
+    - component: tensorflow::Data Processing:Math:ruy
+    - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
