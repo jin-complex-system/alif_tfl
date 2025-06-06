@@ -5,6 +5,12 @@ project:
       files:
         - file: parameters.h
         - file: main.c
+        - file: app/app.h
+        - file: app/app.c
+        - file: led/led.h
+        - file: led/led.c
+        - file: sd_card/sd_card.h
+        - file: sd_card/sd_card.c
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
