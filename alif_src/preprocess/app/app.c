@@ -83,6 +83,7 @@ app_setup(void) {
     
     initialise_power_spectrum(N_FFT);
 
+    printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
 #if NUM_SECONDS_DESIRED_AUDIO == NUM_SECONDS_AUDIO
     printf("num frames: %lu\r\n", NUM_FRAMES);
 #else
@@ -98,7 +99,11 @@ void
 app_main_loop(void) {
 
     while(1) {
-        preprocess_buffer();
+        #define NUM_ITERATIONS 20
+        for (uint8_t iterator = 0; iterator < NUM_ITERATIONS; iterator++) {
+            preprocess_buffer();
+        }
+        
         toggle_led(LED_BLUE);
         printf("Done preprocessing\r\n");
     }
