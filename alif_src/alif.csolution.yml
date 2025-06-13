@@ -65,4 +65,5 @@ solution:
     - project: blinky/blinky.cproject.yml
     - project: hello/hello.cproject.yml
     - project: hello_rtt/hello_rtt.cproject.yml
+    - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
     - project: preprocess/preprocess.cproject.yml
