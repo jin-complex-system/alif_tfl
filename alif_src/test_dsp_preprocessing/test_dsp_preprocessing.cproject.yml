@@ -4,6 +4,10 @@ project:
     - group: App
       files:
         - file: main.c
+    - group: unit_tests
+      files:
+        - file: unit_tests/utils/test_square_root_approximation.h
+        - file: unit_tests/utils/test_square_root_approximation.c
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -11,6 +15,50 @@ project:
         - file: ../libs/common_app_utils/logging/uart_tracelib.c
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+    - group: dsp_preprocess
+      files:
+        # # supporting library for dsp_preprocess
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.h
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.c
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
+        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
+        # - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
+      
+        # utils
+        - file: ../libs/dsp_preprocessing/utils/include/convert_complex.h
+        - file: ../libs/dsp_preprocessing/utils/src/convert_complex.c
+        - file: ../libs/dsp_preprocessing/utils/include/insertion_sort.h
+        - file: ../libs/dsp_preprocessing/utils/src/insertion_sort.c
+        - file: ../libs/dsp_preprocessing/utils/include/log_approximation.h
+        - file: ../libs/dsp_preprocessing/utils/src/log_approximation.c
+        - file: ../libs/dsp_preprocessing/utils/include/square_root_approximation.h
+        - file: ../libs/dsp_preprocessing/utils/src/square_root_approximation.c
+
+        # statistics
+        - file: ../libs/dsp_preprocessing/statistics/include/statistics.h
+        - file: ../libs/dsp_preprocessing/statistics/src/statistics.c
+
+        # audio_dsp
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/audio_dsp_fft.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/audio_dsp_fft.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/hann_window_compute.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/hann_window_compute.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/mel_spectrogram.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_get_precomputed.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_spectrogram.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_utils.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/power_spectrum.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/power_spectrum.c
+
+        # audio_dsp constants - hann window
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_scale_1024.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_no_scale_1024.h
+
+        # audio_dsp constants - mel constants
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_44100.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_44100.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_44100.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_44100.h
 
   output:
     base-name: $Project$
@@ -24,6 +72,27 @@ project:
     - ../libs/board/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
+
+    # # dsp_preprocess: supporting library for dsp_preprocess
+    # - ../libs/dsp_preprocessing/external/kissfft/
+
+    # dsp_preprocess: utils
+    - ../libs/dsp_preprocessing/utils/include/
+
+    # dsp_preprocess: statistics
+    - ../libs/dsp_preprocessing/statistics/include/
+
+    # dsp_preprocess: audio_dsp
+    - ../libs/dsp_preprocessing/audio_dsp/include/
+
+    # dsp_preprocess: audio_dsp constants - hann window
+    - ./libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_no_scale_1024.h
+
+    # dsp_preprocess: audio_dsp constants - mel constants
+    - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float
+    - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin
+    - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin
+    - ../libs/audio_dsp/include/precomputed_mel/mel_weights
   components:
     # needed for Alif Ensemble support
     - component: AlifSemiconductor::Device:Startup&C Startup
@@ -80,3 +149,6 @@ project:
     # - component: AlifSemiconductor::Device:Retarget IO:STDERR
     # - component: AlifSemiconductor::Device:Retarget IO:STDIN
     # - component: AlifSemiconductor::Device:Retarget IO:STDOUT
+
+    # CMSIS
+    - component: ARM::CMSIS:DSP

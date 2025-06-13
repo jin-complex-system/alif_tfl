@@ -18,6 +18,8 @@
 #include <uart_tracelib.h>
 #include <fault_handler.h>
 
+#include "unit_tests/utils/test_square_root_approximation.h"
+
 static void uart_callback(uint32_t event)
 {
 }
@@ -35,6 +37,8 @@ int main (void)
     BOARD_LED2_Control(BOARD_LED_STATE_HIGH);
 
     printf("\r\nHello World!\r\n");
+
+    test_square_root_approximation();
 
     while (1) __WFE();
 }
