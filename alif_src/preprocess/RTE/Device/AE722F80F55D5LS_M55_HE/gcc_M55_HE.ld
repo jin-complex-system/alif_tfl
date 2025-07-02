@@ -1,6 +1,7 @@
+
 /* This file was ported to work on Alif Semiconductor Ensemble family of devices. */
 
-/* Copyright (C) 2022 Alif Semiconductor - All Rights Reserved.
+/* Copyright (C) 2023 Alif Semiconductor - All Rights Reserved.
  * Use, distribution and modification of this code is permitted under the
  * terms stated in the Alif Semiconductor Software License Agreement
  *
@@ -27,21 +28,28 @@
  * limitations under the License.
  */
 
-__STACK_SIZE = 0x00001800;
-__HEAP_SIZE  = 0x00008000;
-__ROM_BASE = 0x80008000;
-__ROM_SIZE = 0x0047F000;
-__OSPI_FLASH_BASE = 0xC0000000;
-__OSPI_FLASH_SIZE = 0x02000000;
+__STACK_SIZE    = 0x00002000;
+__HEAP_SIZE     = 0x00004000;
+__APP_HEAP_SIZE = 0x00004000;
+__ROM_BASE      = 0x80000000;
+__ROM_SIZE      = 0x00200000;
+
+TGU_BLOCK_SIZE   = 16384;
+
+/*
+ * Note:
+ * The empty regions(eg SRAM1) are ON by default, but may have been released
+ * by some example applications. So make sure your application requests
+ * power for these regions before adding contents.
+ */
 
 MEMORY
 {
-  ITCM  (rwx) : ORIGIN = 0x01000000, LENGTH = 0x00040000
+  ITCM  (rwx) : ORIGIN = 0x00000000, LENGTH = 0x00040000
   DTCM  (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00040000
   SRAM0 (rwx) : ORIGIN = 0x02000000, LENGTH = 0x00400000
   SRAM1 (rwx) : ORIGIN = 0x08000000, LENGTH = 0x00280000
   MRAM  (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
-  OSPI_FLASH (rx) : ORIGIN = __OSPI_FLASH_BASE, LENGTH = __OSPI_FLASH_SIZE
 }
 
 ENTRY(Reset_Handler)
@@ -50,91 +58,77 @@ SECTIONS
 {
   .startup.at_mram : ALIGN(16)
   {
-    /* MRAM has all read-only code and data except fast LVGL code and some maths tables
-     * This memory layout is a safe default for high-memory builds like the inference runner
-     * where the usual attempts to put inference code into ITCM dont fit
-     */
-    /* Only more-specific stuff here. General wildcards in
-     * a later-declared section, giving a chance for other
-     * regions to get in before-hand
-     */
     KEEP(*(.vectors))
+
+    *startup_*(.text .rodata*)
+    *system_*(.text .rodata*)
+    *system_utils*(.text .rodata*)
+    *pm*(.text .rodata*)
+    *tgu_*(.text .rodata*)
+    *mpu_*(.text .rodata*)
+    *tcm_partition*(.text .rodata*)
+
+    *lv_*(.text .rodata*)
+
     *(startup_ro_data)
+    . = ALIGN(16);
   } > MRAM
 
-  .copy.table.at_mram : ALIGN(4)
+  .copy.table : ALIGN(4)
   {
     __copy_table_start__ = .;
-    LONG ( LOADADDR(.text.itcm.at_mram) )
-    LONG ( ADDR(.text.itcm.at_mram) )
-    LONG ( SIZEOF(.text.itcm.at_mram)/4 )
-    LONG ( LOADADDR(.data.dtcm.at_mram) )
-    LONG ( ADDR(.data.dtcm.at_mram) )
-    LONG ( SIZEOF(.data.dtcm.at_mram)/4 )
-    LONG ( LOADADDR(.data.sram0.at_mram) )
-    LONG ( ADDR(.data.sram0.at_mram) )
-    LONG ( SIZEOF(.data.sram0.at_mram)/4 )
+    LONG ( LOADADDR(.data.at_dtcm) )
+    LONG ( ADDR(.data.at_dtcm) )
+    LONG ( SIZEOF(.data.at_dtcm)/4 )
+    LONG ( LOADADDR(.code.at_itcm) )
+    LONG ( ADDR(.code.at_itcm) )
+    LONG ( SIZEOF(.code.at_itcm)/4 )
     __copy_table_end__ = .;
+    . = ALIGN(16);
   } > MRAM
 
-  .zero.table.at_mram : ALIGN(4)
+  .zero.table : ALIGN(4)
   {
     __zero_table_start__ = .;
-    LONG (ADDR(.bss.itcm))
-    LONG (SIZEOF(.bss.itcm)/4)
     LONG (ADDR(.bss))
     LONG (SIZEOF(.bss)/4)
-    LONG (ADDR(.bss.sram0))
-    LONG (SIZEOF(.bss.sram0)/4)
-    LONG (ADDR(.bss.sram1))
-    LONG (SIZEOF(.bss.sram1)/4)
+    LONG (ADDR(.bss.at_sram0))
+    LONG (SIZEOF(.bss.at_sram0)/4)
     __zero_table_end__ = .;
+    . = ALIGN(16);
   } > MRAM
 
-  .vectors.itcm (NOLOAD) : ALIGN(2048)
+  .code.at_itcm : ALIGN(8)
   {
-    *(.bss.noinit.ram_vectors)
-  } > ITCM
+    *(.text*)
+    . = ALIGN(16);
+  } > ITCM AT > MRAM
 
-  .text.itcm.at_mram : ALIGN(8)
+  .data.at_dtcm : ALIGN(8)
   {
-    /* ITCM has only fast LVGL and RAM vectors */
-    *(fast_code)
-  } > ITCM AT> MRAM
-
-  .data.dtcm.at_mram : ALIGN(8)
-  {
-    /* DTCM has all read-write data, including NPU activation buffer and audio processing buffers */
     *(vtable)
     *(.data)
     *(.data*)
+    *arm_common_tables*(.data* .rodata*)
 
     KEEP(*(.jcr*))
 
-  } > DTCM AT> MRAM 
+    . = ALIGN(8);
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+    . = ALIGN(8);
+    __exidx_start = .;
+    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    __exidx_end = .;
+    . = ALIGN(16);
+  } > DTCM AT > MRAM
 
-  /* Place non-zero code/data here if required in SRAM0 */
-  .data.sram0.at_mram : ALIGN(8)
+  .bss.at_sram0 (NOLOAD) : ALIGN(8)
   {
-    * (ifm)
-  } > SRAM0 AT> MRAM
-
-  .bss.sram0 (NOLOAD) : ALIGN(8)
-  {
-    * (.bss.large_ram)                     /* Large LVGL buffers */
-    * (.bss.camera_frame_buf)              /* Camera Frame Buffer */
-    * (.bss.camera_frame_bayer_to_rgb_buf) /* (Optional) Camera Frame Buffer for Bayer to RGB Convertion.*/
-    * (.bss.lcd_image_buf)
+    *(.bss.lcd_crop_and_interpolate_buf)  /* LCD crop and intrepolate image processing buffer. */
+    *(.bss.lcd_frame_buf)                 /* LCD frame Buffer. */
+    *(.bss.camera_frame_buf)              /* Camer Frame Buffer */
+    *(.bss.camera_frame_bayer_to_rgb_buf) /* (Optional) Camera Frame Buffer for Bayer to RGB Conversion. */
   } > SRAM0
-
-  .bss.sram1 (NOLOAD) : ALIGN(8)
-  {
-    * (.bss.NoInit.activation_buf_sram) /* 2MB */
-  } > SRAM1
-
-  .bss.itcm (NOLOAD) : ALIGN(8)
-  {
-  } > ITCM
 
   .bss (NOLOAD) : ALIGN(8)
   {
@@ -142,9 +136,29 @@ SECTIONS
     *(.bss)
     *(.bss.*)
     *(COMMON)
+
     . = ALIGN(8);
     __bss_end__ = .;
   } > DTCM
+
+  .nonsecure0_region (NOLOAD) :
+  {
+    . = ALIGN(TGU_BLOCK_SIZE);
+    __ns_region_0_start = .;
+    * (eth_buf)
+    * (usb_dma_buf)
+    * (sd_dma_buf)
+    . = ALIGN(TGU_BLOCK_SIZE);
+    __ns_region_0_end = .;
+  } > DTCM
+
+  .__app_heap (NOLOAD) : ALIGN(8)
+  {
+     . = ALIGN(8);
+     __RAM_segment_used_end__ = .;
+     . = . + __APP_HEAP_SIZE;
+     . = ALIGN(8);
+   } >DTCM
 
   .heap (NOLOAD) : ALIGN(8)
   {
@@ -166,7 +180,7 @@ SECTIONS
 
   .readonly.at_mram : ALIGN(8)
   {
-    /* Use wildcards to mop up any read-only not directed to TCM */ 
+    /* Use wildcards to mop up any read-only not directed to TCM */
     KEEP(*(.init))
     KEEP(*(.fini))
 
@@ -204,26 +218,12 @@ SECTIONS
     *(SORT(.dtors.*))
     *(.dtors)
 
-    . = ALIGN(8);
-    *(.ARM.extab* .gnu.linkonce.armextab.*)
-    . = ALIGN(8);
-    __exidx_start = .;
-    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    __exidx_end = .;
-
-    . = ALIGN(4);
-    *(.text*)
     *(.rodata*)
 
-    *(nn_model)
-    *(labels)
-    *(ifm)
-
     KEEP(*(.eh_frame*))
+    . = ALIGN(16);
   } > MRAM
 
-  .readonly.at_ext_flash : ALIGN(8)
-  {
-    *(nn_model_ext_flash)
-  } > OSPI_FLASH
+  /* Check if data + heap + stack exceeds RAM limit */
+  ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 }

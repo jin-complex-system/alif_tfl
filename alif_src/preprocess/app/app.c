@@ -87,12 +87,16 @@ preprocess_buffer(void) {
 
 void
 app_setup(void) {
+    printf("app_setup()\r\n");
 
     setup_led();
-    inference_tf_setup();
-
+    // inference_tf_setup();
+    
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
+    }
+    else {
+        printf("Sucessfully setup SD card\r\n");
     }
     
     initialise_power_spectrum(N_FFT);
@@ -111,6 +115,7 @@ app_setup(void) {
 
 void
 app_main_loop(void) {
+    printf("app_main_loop()\r\n");
 
     while(1) {
         #define NUM_ITERATIONS 20

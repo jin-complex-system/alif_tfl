@@ -71,8 +71,8 @@ add_operators(void) {
 
 void
 inference_tf_setup(void) {
-    s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
-	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
+    // s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
+	// assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
     add_operators();
     
