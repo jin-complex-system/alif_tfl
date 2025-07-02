@@ -76,12 +76,21 @@ SECTIONS
   .copy.table : ALIGN(4)
   {
     __copy_table_start__ = .;
+    /* Data in DTCM */
     LONG ( LOADADDR(.data.at_dtcm) )
     LONG ( ADDR(.data.at_dtcm) )
     LONG ( SIZEOF(.data.at_dtcm)/4 )
+
+    /* Code in ITCM */
     LONG ( LOADADDR(.code.at_itcm) )
     LONG ( ADDR(.code.at_itcm) )
     LONG ( SIZEOF(.code.at_itcm)/4 )
+
+    /* Data in SRAM0 */
+    LONG ( LOADADDR(.data.sram0.at_mram) )
+    LONG ( ADDR(.data.sram0.at_mram) )
+    LONG ( SIZEOF(.data.sram0.at_mram)/4 )
+
     __copy_table_end__ = .;
     . = ALIGN(16);
   } > MRAM
@@ -93,18 +102,31 @@ SECTIONS
     LONG (SIZEOF(.bss)/4)
     LONG (ADDR(.bss.at_sram0))
     LONG (SIZEOF(.bss.at_sram0)/4)
+    LONG (ADDR(.bss.at_sram1))
+    LONG (SIZEOF(.bss.at_sram1)/4)
     __zero_table_end__ = .;
     . = ALIGN(16);
   } > MRAM
 
+  /*
+  .vectors.itcm (NOLOAD) : ALIGN(2048)
+  {
+    *(.bss.noinit.ram_vectors)
+  } > ITCM
+  */
+
   .code.at_itcm : ALIGN(8)
   {
     *(.text*)
+
+    /* ITCM has only fast LVGL and RAM vectors */
+    *(fast_code)
     . = ALIGN(16);
   } > ITCM AT > MRAM
 
   .data.at_dtcm : ALIGN(8)
   {
+    /* DTCM has all read-write data, including NPU activation buffer and audio processing buffers */
     *(vtable)
     *(.data)
     *(.data*)
@@ -112,6 +134,7 @@ SECTIONS
 
     KEEP(*(.jcr*))
 
+    
     . = ALIGN(8);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(8);
@@ -119,12 +142,28 @@ SECTIONS
     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     __exidx_end = .;
     . = ALIGN(16);
+    
   } > DTCM AT > MRAM
+
+  /* Place non-zero code/data here if required in SRAM0 */
+  .data.sram0.at_mram : ALIGN(8)
+  {
+    * (ifm)
+  } > SRAM0 AT> MRAM
 
   .bss.at_sram0 (NOLOAD) : ALIGN(8)
   {
+    * (.bss.audio_input_buffer)
+    * (.bss.power_spectrum_buffer)
+    * (.bss.mel_spectrogram_buffer)
+    * (.bss.s_tensorArena)
     
   } > SRAM0
+
+  .bss.at_sram1 (NOLOAD) : ALIGN(8)
+  {
+    
+  } > SRAM1
 
   .bss (NOLOAD) : ALIGN(8)
   {
