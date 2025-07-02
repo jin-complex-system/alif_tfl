@@ -98,6 +98,8 @@ SECTIONS
   .zero.table : ALIGN(4)
   {
     __zero_table_start__ = .;
+    LONG (ADDR(.bss.itcm))
+    LONG (SIZEOF(.bss.itcm)/4)
     LONG (ADDR(.bss))
     LONG (SIZEOF(.bss)/4)
     LONG (ADDR(.bss.at_sram0))
@@ -108,12 +110,10 @@ SECTIONS
     . = ALIGN(16);
   } > MRAM
 
-  /*
   .vectors.itcm (NOLOAD) : ALIGN(2048)
   {
     *(.bss.noinit.ram_vectors)
   } > ITCM
-  */
 
   .code.at_itcm : ALIGN(8)
   {
@@ -124,6 +124,12 @@ SECTIONS
     . = ALIGN(16);
   } > ITCM AT > MRAM
 
+  .text.itcm.at_mram : ALIGN(8)
+  {
+    /* ITCM has only fast LVGL and RAM vectors */
+    *(fast_code)
+  } > ITCM AT> MRAM
+
   .data.at_dtcm : ALIGN(8)
   {
     /* DTCM has all read-write data, including NPU activation buffer and audio processing buffers */
@@ -133,7 +139,6 @@ SECTIONS
     *arm_common_tables*(.data* .rodata*)
 
     KEEP(*(.jcr*))
-
     
     . = ALIGN(8);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -164,6 +169,10 @@ SECTIONS
   {
     
   } > SRAM1
+
+  .bss.itcm (NOLOAD) : ALIGN(8)
+  {
+  } > ITCM
 
   .bss (NOLOAD) : ALIGN(8)
   {
@@ -253,9 +262,21 @@ SECTIONS
     *(SORT(.dtors.*))
     *(.dtors)
 
+    . = ALIGN(8);
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+    . = ALIGN(8);
+    __exidx_start = .;
+    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    __exidx_end = .;
+
+    . = ALIGN(4);
+    *(.text*)
     *(.rodata*)
 
-    KEEP(*(.eh_frame*))
+    *(nn_model)
+    *(labels)
+    *(ifm)
+
     . = ALIGN(16);
   } > MRAM
 

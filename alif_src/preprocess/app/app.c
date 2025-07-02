@@ -90,7 +90,7 @@ app_setup(void) {
     printf("app_setup()\r\n");
 
     setup_led();
-    // inference_tf_setup();
+    inference_tf_setup();
     
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
