@@ -35,46 +35,47 @@ uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 #endif // TENSORARENA_NONCACHE
 
-static tflite::MicroMutableOpResolver<98> mutableAllOpResolver; // NOLINT
+// static
+// tflite::MicroMutableOpResolver<26> mutableAllOpResolver; // NOLINT
 
-static inline
-void
-add_operators(void) {
-    mutableAllOpResolver.AddAdd();
-    mutableAllOpResolver.AddBatchMatMul();
-    mutableAllOpResolver.AddConv2D();
-    mutableAllOpResolver.AddDepthwiseConv2D();
-    mutableAllOpResolver.AddFullyConnected();
-    mutableAllOpResolver.AddAveragePool2D();
-    mutableAllOpResolver.AddSoftmax();
-    mutableAllOpResolver.AddTranspose();
-    mutableAllOpResolver.AddTransposeConv();
-    mutableAllOpResolver.AddUnidirectionalSequenceLSTM();
-    mutableAllOpResolver.AddEthosU();
-    mutableAllOpResolver.AddQuantize();
-    mutableAllOpResolver.AddMaxPool2D();
-    mutableAllOpResolver.AddReshape();
-    mutableAllOpResolver.AddSquaredDifference();
-    mutableAllOpResolver.AddRsqrt();
-    mutableAllOpResolver.AddMul();
-    mutableAllOpResolver.AddSub();
-    mutableAllOpResolver.AddConcatenation();
-    mutableAllOpResolver.AddShape();
-    mutableAllOpResolver.AddGather();
-    mutableAllOpResolver.AddGatherNd();
-    mutableAllOpResolver.AddStridedSlice();
-    mutableAllOpResolver.AddReduceMax();
-    mutableAllOpResolver.AddPack();
-    mutableAllOpResolver.AddLogistic();
-    mutableAllOpResolver.AddMean();
-}
+// static inline
+// void
+// add_operators(void) {
+//     mutableAllOpResolver.AddAdd();
+//     mutableAllOpResolver.AddBatchMatMul();
+//     mutableAllOpResolver.AddConv2D();
+//     mutableAllOpResolver.AddDepthwiseConv2D();
+//     mutableAllOpResolver.AddFullyConnected();
+//     mutableAllOpResolver.AddAveragePool2D();
+//     mutableAllOpResolver.AddSoftmax();
+//     mutableAllOpResolver.AddTranspose();
+//     mutableAllOpResolver.AddTransposeConv();
+//     mutableAllOpResolver.AddUnidirectionalSequenceLSTM();
+//     mutableAllOpResolver.AddEthosU();
+//     mutableAllOpResolver.AddQuantize();
+//     mutableAllOpResolver.AddMaxPool2D();
+//     mutableAllOpResolver.AddReshape();
+//     mutableAllOpResolver.AddSquaredDifference();
+//     mutableAllOpResolver.AddRsqrt();
+//     mutableAllOpResolver.AddMul();
+//     mutableAllOpResolver.AddSub();
+//     mutableAllOpResolver.AddConcatenation();
+//     mutableAllOpResolver.AddShape();
+//     mutableAllOpResolver.AddGather();
+//     mutableAllOpResolver.AddGatherNd();
+//     mutableAllOpResolver.AddStridedSlice();
+//     mutableAllOpResolver.AddReduceMax();
+//     mutableAllOpResolver.AddPack();
+//     mutableAllOpResolver.AddLogistic();
+//     mutableAllOpResolver.AddMean();
+// }
 
 void
 inference_tf_setup(void) {
     // s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
 	// assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
-    add_operators();
+    // add_operators();
     
     // /// Build a recording interpreter
     // /// RecordingMicro interpreter can help deterine the actual memory

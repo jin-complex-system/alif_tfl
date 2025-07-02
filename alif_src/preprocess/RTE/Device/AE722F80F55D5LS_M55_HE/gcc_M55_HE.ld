@@ -1,4 +1,3 @@
-
 /* This file was ported to work on Alif Semiconductor Ensemble family of devices. */
 
 /* Copyright (C) 2023 Alif Semiconductor - All Rights Reserved.
@@ -124,10 +123,7 @@ SECTIONS
 
   .bss.at_sram0 (NOLOAD) : ALIGN(8)
   {
-    *(.bss.lcd_crop_and_interpolate_buf)  /* LCD crop and intrepolate image processing buffer. */
-    *(.bss.lcd_frame_buf)                 /* LCD frame Buffer. */
-    *(.bss.camera_frame_buf)              /* Camer Frame Buffer */
-    *(.bss.camera_frame_bayer_to_rgb_buf) /* (Optional) Camera Frame Buffer for Bayer to RGB Conversion. */
+    
   } > SRAM0
 
   .bss (NOLOAD) : ALIGN(8)
