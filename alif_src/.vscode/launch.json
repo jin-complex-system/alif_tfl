@@ -40,7 +40,7 @@
             "type": "gdbtarget",
             "request": "launch",
             "cwd": "${workspaceFolder}/",
-            "program": "out/preprocess/HE/release/preprocess.elf",
+            "program": "out/preprocess/HE/debug/preprocess.elf",
             "gdb": "arm-none-eabi-gdb",
             "preLaunchTask": "CMSIS Load",
             "initCommands": [
@@ -71,7 +71,7 @@
             "type": "gdbtarget",
             "request": "attach",
             "cwd": "${workspaceFolder}/",
-            "program": "out/preprocess/HE/release/preprocess.elf",
+            "program": "out/preprocess/HE/debug/preprocess.elf",
             "gdb": "arm-none-eabi-gdb",
             "initCommands": [
                 ""
