@@ -156,16 +156,23 @@ SECTIONS
     * (ifm)
   } > SRAM0 AT> MRAM
 
-  .bss.at_sram0 (NOLOAD) : ALIGN(8)
+  .code.sram0.at_mram : ALIGN(8)
+  {
+    * (.bss.model_orbw_19_Q_HE_vela_tflite)
+  }
+
+  .bss.at_sram0 : ALIGN(8)
   {
     * (.bss.audio_input_buffer)
     * (.bss.power_spectrum_buffer)
     * (.bss.mel_spectrogram_buffer)
     * (.bss.s_tensorArena)
+    * (.bss.model_orbw_19_Q_HE_vela_tflite)
     
   } > SRAM0
+  
 
-  .bss.at_sram1 (NOLOAD) : ALIGN(8)
+  .bss.at_sram1 : ALIGN(8)
   {
     
   } > SRAM1

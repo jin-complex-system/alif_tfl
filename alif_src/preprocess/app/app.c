@@ -8,6 +8,9 @@
 
 #include <parameters.h>
 
+// #define ADD_HARDWARE_CODE 1
+// #define ADD_PREPROCESS_CODE 1
+
 /// Audio DSP
 #include <hann_window_scale_2048.h>
 #include <audio_dsp_fft.h>
@@ -23,6 +26,8 @@ current_state = APP_STATE_INIT;
 #define OUTPUT_DIRECTORY OUTPUT
 #define OVERWRITE_FILE_IS_OKAY true
 
+
+#ifdef ADD_PREPROCESS_CODE
 /// Audio DSP
 #define INPUT_BUFFER_LENGTH AUDIO_BUFFER_MINIMUM_LENGTH
 audio_data_type
@@ -33,10 +38,12 @@ power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH];
 
 float
 mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH];
+#endif // ADD_PREPROCESS_CODE
 
-static
+static inline
 void
 preprocess_buffer(void) {
+    #ifdef ADD_PREPROCESS_CODE
 	/// Compute mel spectrogram
     #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
     const uint16_t num_iterations = NUM_SECONDS_AUDIO;
@@ -83,22 +90,30 @@ preprocess_buffer(void) {
             TOP_DECIBEL
         );
     }
+    #endif // ADD_PREPROCESS_CODE
 }
 
 void
 app_setup(void) {
     printf("app_setup()\r\n");
 
+
+    #ifdef ADD_HARDWARE_CODE
     setup_led();
+    #endif // ADD_HARDWARE_CODE
+
     inference_tf_setup();
-    
+
+    #ifdef ADD_HARDWARE_CODE
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
     }
     else {
         printf("Sucessfully setup SD card\r\n");
     }
+    #endif // ADD_HARDWARE_CODE
     
+    #ifdef ADD_PREPROCESS_CODE
     initialise_power_spectrum(N_FFT);
 
     printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
@@ -107,8 +122,12 @@ app_setup(void) {
 #else
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
+    #endif // ADD_PREPROCESS_CODE
 
+
+    #ifdef ADD_HARDWARE_CODE
     turn_on_led(LED_RED);
+    #endif // ADD_HARDWARE_CODE
 
     current_state = APP_STATE_INIT;
 }
@@ -123,7 +142,10 @@ app_main_loop(void) {
             preprocess_buffer();
         }
         
+        #ifdef ADD_HARDWARE_CODE
         toggle_led(LED_BLUE);
+        #endif // ADD_HARDWARE_CODE
+
         printf("Done preprocessing\r\n");
     }
 

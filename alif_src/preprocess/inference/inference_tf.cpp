@@ -35,94 +35,156 @@ uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 #endif // TENSORARENA_NONCACHE
 
-// static
-// tflite::MicroMutableOpResolver<26> mutableAllOpResolver; // NOLINT
+static
+tflite::MicroMutableOpResolver<26> s_microOpResolver; // NOLINT
 
-// static inline
-// void
-// add_operators(void) {
-//     mutableAllOpResolver.AddAdd();
-//     mutableAllOpResolver.AddBatchMatMul();
-//     mutableAllOpResolver.AddConv2D();
-//     mutableAllOpResolver.AddDepthwiseConv2D();
-//     mutableAllOpResolver.AddFullyConnected();
-//     mutableAllOpResolver.AddAveragePool2D();
-//     mutableAllOpResolver.AddSoftmax();
-//     mutableAllOpResolver.AddTranspose();
-//     mutableAllOpResolver.AddTransposeConv();
-//     mutableAllOpResolver.AddUnidirectionalSequenceLSTM();
-//     mutableAllOpResolver.AddEthosU();
-//     mutableAllOpResolver.AddQuantize();
-//     mutableAllOpResolver.AddMaxPool2D();
-//     mutableAllOpResolver.AddReshape();
-//     mutableAllOpResolver.AddSquaredDifference();
-//     mutableAllOpResolver.AddRsqrt();
-//     mutableAllOpResolver.AddMul();
-//     mutableAllOpResolver.AddSub();
-//     mutableAllOpResolver.AddConcatenation();
-//     mutableAllOpResolver.AddShape();
-//     mutableAllOpResolver.AddGather();
-//     mutableAllOpResolver.AddGatherNd();
-//     mutableAllOpResolver.AddStridedSlice();
-//     mutableAllOpResolver.AddReduceMax();
-//     mutableAllOpResolver.AddPack();
-//     mutableAllOpResolver.AddLogistic();
-//     mutableAllOpResolver.AddMean();
-// }
+static inline
+void
+add_operators(void) {
+    s_microOpResolver.AddAdd();
+    s_microOpResolver.AddBatchMatMul();
+    s_microOpResolver.AddConv2D();
+    s_microOpResolver.AddDepthwiseConv2D();
+    s_microOpResolver.AddFullyConnected();
+    s_microOpResolver.AddAveragePool2D();
+    s_microOpResolver.AddSoftmax();
+    s_microOpResolver.AddTranspose();
+    s_microOpResolver.AddTransposeConv();
+    s_microOpResolver.AddUnidirectionalSequenceLSTM();
+    s_microOpResolver.AddEthosU();
+    s_microOpResolver.AddQuantize();
+    s_microOpResolver.AddMaxPool2D();
+    s_microOpResolver.AddReshape();
+    s_microOpResolver.AddSquaredDifference();
+    s_microOpResolver.AddRsqrt();
+    s_microOpResolver.AddMul();
+    s_microOpResolver.AddSub();
+    s_microOpResolver.AddConcatenation();
+    s_microOpResolver.AddShape();
+    s_microOpResolver.AddGather();
+    s_microOpResolver.AddGatherNd();
+    s_microOpResolver.AddStridedSlice();
+    s_microOpResolver.AddReduceMax();
+    s_microOpResolver.AddPack();
+    s_microOpResolver.AddLogistic();
+    s_microOpResolver.AddMean();
+}
 
 void
 inference_tf_setup(void) {
-    // s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
-	// assert(s_model->version() == TFLITE_SCHEMA_VERSION);
+    s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
+	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
-    // add_operators();
-    
-    // /// Build a recording interpreter
-    // /// RecordingMicro interpreter can help deterine the actual memory
-    // /// needed for runtime
-    // {
-    //     static tflite::RecordingMicroInterpreter record_interpreter(
-    //     		s_model,
-    // 			s_microOpResolver,
-    // 			s_tensorArena,
-    // 			kTensorArenaSize,
-    // 			nullptr);
-    //     PRINTF("Recording state of model at runtime\r\n");
-    //     if (record_interpreter.Invoke() != kTfLiteOk) {
-    //       PRINTF("Something went wrong with invoking interpreter for recording\r\n");
-    //     }
-    //     /// Print out detailed allocation information:
-    //     else {
+    add_operators();
 
-    //     	const auto microallocator =
-    //     			record_interpreter.GetMicroAllocator();
+    /// Build an interpreter to run the model with.
+    static tflite::MicroInterpreter static_interpreter(
+		s_model,
+		s_microOpResolver,
+		s_tensorArena,
+        kTensorArenaSize);
+    s_interpreter = &static_interpreter;
 
-    //     	/// Actual buffer needed for inference
-	// 		microallocator.PrintAllocations();
-    //     	PRINTF(
-    //     			"Actual buffer needed: %d bytes\r\n",
-	// 				microallocator.GetSimpleMemoryAllocator()->GetUsedBytes());
-    //     }
-    // }
+    /// Allocate memory from the tensor_arena for the model's tensors.
+    const TfLiteStatus allocate_status =
+    		s_interpreter->AllocateTensors();
+    assert(allocate_status == kTfLiteOk);
 }
 
 void
 inference_tf_set_input(
 	const inference_input_data_type* input_buffer,
 	const uint32_t input_buffer_length) {
-    // TODO: Set input buffer
+    	/// Check parameters
+	{
+		assert(input_buffer != nullptr);
+		assert(input_buffer_length > 0);
+	}
+
+	assert(s_interpreter != nullptr);
+	TfLiteTensor* inputTensor = s_interpreter->input(0);
+	assert(inputTensor != nullptr);
+	assert(inputTensor->type == EXPECTED_INPUT_DATA_TYPE);
+
+    #ifndef NDEBUG
+	uint32_t tensor_size = 1;
+	for (int dims_iterator = 0; dims_iterator < inputTensor->dims->size; dims_iterator++) {
+		tensor_size = tensor_size * inputTensor->dims->data[dims_iterator];
+	}
+	assert(input_buffer_length == tensor_size);
+#endif // NDEBUG
+
+	inference_input_data_type* tensor_input;
+	if (EXPECTED_INPUT_DATA_TYPE == kTfLiteUInt8) {
+		tensor_input = (inference_input_data_type *)inputTensor->data.uint8;
+	}
+	else if (EXPECTED_INPUT_DATA_TYPE == kTfLiteFloat32) {
+		tensor_input = (inference_input_data_type *)inputTensor->data.f;
+	}
+	else if (EXPECTED_INPUT_DATA_TYPE == kTfLiteInt8) {
+		tensor_input = (inference_input_data_type *)inputTensor->data.int8;
+	}
+	assert(tensor_input != nullptr);
+
+	/// Load input
+    {
+        for (uint32_t tensor_iterator = 0; tensor_iterator < input_buffer_length; tensor_iterator++) {
+        	tensor_input[tensor_iterator] =
+        			input_buffer[tensor_iterator];
+        }
+    }
 }
 
 void
 inference_tf_get_output(
 	inference_output_data_type* output_buffer,
 	const uint32_t output_buffer_length) {
-    // TODO: Get output buffer
+    	/// Check parameters
+	{
+		assert(output_buffer != nullptr);
+		assert(output_buffer_length > 0);
+	}
+
+	assert(s_interpreter != nullptr);
+
+	TfLiteTensor* outputtTensor;
+	outputtTensor = s_interpreter->output(1);
+
+    assert(outputtTensor != nullptr);
+    assert(outputtTensor->type == EXPECTED_OUTPUT_DATA_TYPE);
+
+#ifndef NDEBUG
+	uint32_t tensor_size = 1;
+	for (int dims_iterator = 0; dims_iterator < outputtTensor->dims->size; dims_iterator++) {
+		tensor_size = tensor_size * outputtTensor->dims->data[dims_iterator];
+	}
+	assert(output_buffer_length == tensor_size);
+#endif // NDEBUG
+
+	inference_output_data_type* tensor_output;
+	if (EXPECTED_OUTPUT_DATA_TYPE == kTfLiteUInt8) {
+		tensor_output = (inference_output_data_type *)outputtTensor->data.uint8;
+	}
+	else if (EXPECTED_OUTPUT_DATA_TYPE == kTfLiteFloat32) {
+		tensor_output = (inference_output_data_type *)outputtTensor->data.f;
+	}
+	else if (EXPECTED_OUTPUT_DATA_TYPE == kTfLiteInt8) {
+		tensor_output = (inference_input_data_type *)outputtTensor->data.int8;
+	}
+	assert(tensor_output != nullptr);
+
+    /// Unload output buffer
+    {
+        for (uint32_t tensor_iterator = 0; tensor_iterator < output_buffer_length; tensor_iterator++) {
+        	inference_output_data_type my_output = tensor_output[tensor_iterator];
+        	output_buffer[tensor_iterator] = my_output;
+        }
+    }
 }
 
 void
 inference_tf_predict() {
-    // TODO: Perform prediction
-
-    // TfLiteStatus invoke_status = interpreter.Invoke();
+	const auto tflite_status =
+			s_interpreter->Invoke();
+	assert(tflite_status == kTfLiteOk);
 }
