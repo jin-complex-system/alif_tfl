@@ -9,10 +9,11 @@
 #include <parameters.h>
 
 /// Audio DSP
-#include <hann_window_scale_1024.h>
+#include <hann_window_scale_2048.h>
 #include <audio_dsp_fft.h>
 #include <power_spectrum.h>
 #include <mel_spectrogram.h>
+#include <power_to_decibel.h>
 
 static APP_STATE
 current_state = APP_STATE_INIT;
@@ -44,6 +45,8 @@ preprocess_buffer(void) {
     #endif // NUM_SECONDS_AUDIO
 
     for (uint16_t iterator = 0; iterator < num_iterations; iterator++) {
+        float max_mel = 1e-16f;
+
         for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
             const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
 
@@ -54,20 +57,31 @@ preprocess_buffer(void) {
                 POWER_SPECTRUM_BUFFER_LENGTH,
                 NULL,
                 0u,
-                0.0f,
-                HANN_WINDOW_SCALE_1024_BUFFER,
-                HANN_WINDOW_SCALE_1024_BUFFER_LENGTH
+                HANN_WINDOW_SCALE_2048_BUFFER,
+                HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
             );
 
-            compute_power_spectrum_into_mel_spectrogram(
+            const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                 &power_spectrum_buffer[0],
                 POWER_SPECTRUM_BUFFER_LENGTH,
                 &mel_spectrogram_buffer[frame_iterator * N_MELS],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
+                8000u,
                 N_MELS
             );
+
+            if (temp_max > max_mel) {
+                max_mel = temp_max;
+            }
         }
+
+        convert_power_to_decibel(
+            mel_spectrogram_buffer,
+            N_MELS * NUM_FRAMES,
+            max_mel,
+            TOP_DECIBEL
+        );
     }
 }
 

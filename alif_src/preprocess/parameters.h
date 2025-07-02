@@ -12,7 +12,7 @@ typedef int16_t audio_data_type;
 typedef int32_t audio_data_type;
 #endif // AUDIO_SAMPLE_DATA_BITS
 
-#define N_FFT                               1024
+#define N_FFT                               2048
 #define HOP_LENGTH                          512
 
 #define N_MELS                              64
@@ -20,6 +20,8 @@ typedef int32_t audio_data_type;
 #define NUM_SECONDS_DESIRED_AUDIO           7
 #define NUM_SECONDS_AUDIO                   1
 #define SAMPLING_RATE_PER_SECOND            44100
+
+#define TOP_DECIBEL                         80.0f
 
 
 /// Power spectrum parameters
