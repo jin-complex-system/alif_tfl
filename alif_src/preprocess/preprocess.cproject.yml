@@ -30,6 +30,9 @@ project:
         - file: ../libs/FatFS/ffconf.h
         - file: ../libs/FatFS/ffsystem.c
         - file: ../libs/FatFS/ffunicode.c
+    - group: models
+      files:
+        - file: ../models/model_orbw_19_Q_HE_vela.h
     - group: dsp_preprocess
       files:
         # # supporting library for dsp_preprocess
@@ -169,6 +172,9 @@ project:
     - ../libs/FatFS/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
+
+    # Models
+    - ../models
 
     # # dsp_preprocess: supporting library for dsp_preprocess
     # - ../libs/dsp_preprocessing/external/kissfft/

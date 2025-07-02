@@ -12,6 +12,8 @@
 
 #include <cassert>
 
+#include <model_orbw_19_Q_HE_vela.h>
+
 static const
 tflite::Model*
 s_model = nullptr;
@@ -23,7 +25,7 @@ s_interpreter = nullptr;
 /// An area of memory to use for input, output, and intermediate arrays.
 /// (Can be adjusted based on the model needs.)
 constexpr uint32_t
-kTensorArenaSize = 500u * 1024;
+kTensorArenaSize = 300u * 1000u;
 
 #ifdef TENSORARENA_NONCACHE
 static uint8_t classifier_tensorArena[kTensorArenaSize] __ALIGNED(16) __attribute__((section("NonCacheable")));
@@ -33,13 +35,46 @@ uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 #endif // TENSORARENA_NONCACHE
 
+static tflite::MicroMutableOpResolver<98> mutableAllOpResolver; // NOLINT
+
+static inline
+void
+add_operators(void) {
+    mutableAllOpResolver.AddAdd();
+    mutableAllOpResolver.AddBatchMatMul();
+    mutableAllOpResolver.AddConv2D();
+    mutableAllOpResolver.AddDepthwiseConv2D();
+    mutableAllOpResolver.AddFullyConnected();
+    mutableAllOpResolver.AddAveragePool2D();
+    mutableAllOpResolver.AddSoftmax();
+    mutableAllOpResolver.AddTranspose();
+    mutableAllOpResolver.AddTransposeConv();
+    mutableAllOpResolver.AddUnidirectionalSequenceLSTM();
+    mutableAllOpResolver.AddEthosU();
+    mutableAllOpResolver.AddQuantize();
+    mutableAllOpResolver.AddMaxPool2D();
+    mutableAllOpResolver.AddReshape();
+    mutableAllOpResolver.AddSquaredDifference();
+    mutableAllOpResolver.AddRsqrt();
+    mutableAllOpResolver.AddMul();
+    mutableAllOpResolver.AddSub();
+    mutableAllOpResolver.AddConcatenation();
+    mutableAllOpResolver.AddShape();
+    mutableAllOpResolver.AddGather();
+    mutableAllOpResolver.AddGatherNd();
+    mutableAllOpResolver.AddStridedSlice();
+    mutableAllOpResolver.AddReduceMax();
+    mutableAllOpResolver.AddPack();
+    mutableAllOpResolver.AddLogistic();
+    mutableAllOpResolver.AddMean();
+}
+
 void
 inference_tf_setup(void) {
-    // s_model = tflite::GetModel(model_data);
-	// assert(s_model->version() == TFLITE_SCHEMA_VERSION);
+    s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
+	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
-    // model_GetOpsResolver();
-
+    add_operators();
     
     // /// Build a recording interpreter
     // /// RecordingMicro interpreter can help deterine the actual memory
