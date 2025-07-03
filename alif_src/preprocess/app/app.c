@@ -39,18 +39,102 @@ float
 mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH];
 #endif // ADD_PREPROCESS_CODE
 
+
 static inline
 void
-preprocess_buffer(void) {
+preprocess_buffer_measure_individual(
+    const uint16_t num_iterations) {
     #ifdef ADD_PREPROCESS_CODE
 	/// Compute mel spectrogram
     #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
-    const uint16_t num_iterations = NUM_SECONDS_AUDIO;
+    const uint16_t total_iterations = NUM_SECONDS_AUDIO * num_iterations;
     #else
-    const uint16_t num_iterations = NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO;
+    const uint16_t total_iterations = NUM_SECONDS_DESIRED_AUDIO * num_iterations / NUM_SECONDS_AUDIO;
     #endif // NUM_SECONDS_AUDIO
 
-    for (uint16_t iterator = 0; iterator < num_iterations; iterator++) {
+    /// Measure compute_power_spectrum_audio_samples()
+    {
+        turn_on_led(LED_GREEN);
+        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
+            float max_mel = 1e-16f;
+
+            for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
+                const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+
+                compute_power_spectrum_audio_samples(
+                    &audio_input_buffer[audio_iterator],
+                    AUDIO_FRAME_LENGTH,
+                    power_spectrum_buffer,
+                    POWER_SPECTRUM_BUFFER_LENGTH,
+                    NULL,
+                    0u,
+                    HANN_WINDOW_SCALE_2048_BUFFER,
+                    HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
+                );
+            }
+        }
+        turn_off_led(LED_GREEN);
+    }
+
+
+    /// Measure compute_power_spectrum_into_mel_spectrogram()
+    {
+        turn_on_led(LED_BLUE);
+        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
+            float max_mel = 1e-16f;
+
+            for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
+                const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+
+                const float temp_max = compute_power_spectrum_into_mel_spectrogram(
+                    &power_spectrum_buffer[0],
+                    POWER_SPECTRUM_BUFFER_LENGTH,
+                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
+                    N_FFT,
+                    SAMPLING_RATE_PER_SECOND,
+                    8000u,
+                    N_MELS
+                );
+
+                if (temp_max > max_mel) {
+                    max_mel = temp_max;
+                }
+            }
+        }
+        turn_off_led(LED_BLUE);
+    }
+
+    /// Measure convert_power_to_decibel()
+    {
+        turn_on_led(LED_RED);
+        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
+            float max_mel = 25.0f;
+
+            convert_power_to_decibel(
+                mel_spectrogram_buffer,
+                N_MELS * NUM_FRAMES,
+                max_mel,
+                TOP_DECIBEL
+            );
+        }
+        turn_off_led(LED_RED);
+    }
+    #endif // ADD_PREPROCESS_CODE
+}
+
+static inline
+void
+preprocess_buffer(const uint16_t num_iterations) {
+    #ifdef ADD_PREPROCESS_CODE
+	/// Compute mel spectrogram
+    #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
+    const uint16_t total_iterations = NUM_SECONDS_AUDIO * num_iterations;
+    #else
+    const uint16_t total_iterations = NUM_SECONDS_DESIRED_AUDIO * num_iterations / NUM_SECONDS_AUDIO;
+    #endif // NUM_SECONDS_AUDIO
+
+
+    for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
         float max_mel = 1e-16f;
 
         for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
@@ -89,6 +173,8 @@ preprocess_buffer(void) {
             TOP_DECIBEL
         );
     }
+
+    toggle_led(LED_GREEN);
     #endif // ADD_PREPROCESS_CODE
 }
 
@@ -100,7 +186,7 @@ app_setup(void) {
     setup_led();
     #endif // ADD_HARDWARE_CODE
 
-    inference_tf_setup();
+    // inference_tf_setup();
 
     #ifdef ADD_HARDWARE_CODE
     // if (!sd_card_setup()) {
@@ -136,15 +222,10 @@ app_main_loop(void) {
 
     while(1) {
         #define NUM_ITERATIONS 20
-        for (uint8_t iterator = 0; iterator < NUM_ITERATIONS; iterator++) {
-            preprocess_buffer();
-        }
-        
-        #ifdef ADD_HARDWARE_CODE
-        toggle_led(LED_BLUE);
-        #endif // ADD_HARDWARE_CODE
+        // preprocess_buffer(NUM_ITERATIONS);
+        preprocess_buffer_measure_individual(NUM_ITERATIONS);
 
-        printf("Done preprocessing\r\n");
+        printf("Done preprocessing %u iterations\r\n", NUM_ITERATIONS);
     }
 
     // TODO: Enter into main loop with app-defined states
