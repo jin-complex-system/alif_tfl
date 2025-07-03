@@ -1,6 +1,7 @@
 #include "inference_tf.h"
 #include "inference_definitions.h"
 
+#ifdef USE_TENSORFLOW
 #include <tensorflow/lite/micro/kernels/micro_ops.h>
 #include <tensorflow/lite/micro/micro_interpreter.h>
 #include <tensorflow/lite/micro/micro_op_resolver.h>
@@ -9,9 +10,12 @@
 
 // Add an include to the recording API:
 #include <tensorflow/lite/micro/recording_micro_interpreter.h>
+#endif // USE_TENSORFLOW
 
 #include <cassert>
 
+
+#ifdef USE_TENSORFLOW
 #include <model_orbw_19_Q_HE_vela.h>
 
 static const
@@ -28,10 +32,10 @@ constexpr uint32_t
 kTensorArenaSize = 300u * 1000u;
 
 #ifdef TENSORARENA_NONCACHE
-static uint8_t classifier_tensorArena[kTensorArenaSize] __ALIGNED(16) __attribute__((section("NonCacheable")));
+static uint8_t
+s_tensorArena[kTensorArenaSize] __ALIGNED(16) __attribute__((section("NonCacheable")));
 #else
-static
-uint8_t
+static uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 #endif // TENSORARENA_NONCACHE
 
@@ -69,9 +73,11 @@ add_operators(void) {
     s_microOpResolver.AddLogistic();
     s_microOpResolver.AddMean();
 }
+#endif // USE_TENSORFLOW
 
 void
 inference_tf_setup(void) {
+#ifdef USE_TENSORFLOW
     s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
 	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
@@ -89,17 +95,19 @@ inference_tf_setup(void) {
     const TfLiteStatus allocate_status =
     		s_interpreter->AllocateTensors();
     assert(allocate_status == kTfLiteOk);
+#endif // USE_TENSORFLOW
 }
 
 void
 inference_tf_set_input(
 	const inference_input_data_type* input_buffer,
 	const uint32_t input_buffer_length) {
-    	/// Check parameters
+	/// Check parameters
 	{
 		assert(input_buffer != nullptr);
 		assert(input_buffer_length > 0);
 	}
+#ifdef USE_TENSORFLOW
 
 	assert(s_interpreter != nullptr);
 	TfLiteTensor* inputTensor = s_interpreter->input(0);
@@ -133,6 +141,7 @@ inference_tf_set_input(
         			input_buffer[tensor_iterator];
         }
     }
+#endif // USE_TENSORFLOW
 }
 
 void
@@ -144,7 +153,7 @@ inference_tf_get_output(
 		assert(output_buffer != nullptr);
 		assert(output_buffer_length > 0);
 	}
-
+#ifdef USE_TENSORFLOW
 	assert(s_interpreter != nullptr);
 
 	TfLiteTensor* outputtTensor;
@@ -180,11 +189,14 @@ inference_tf_get_output(
         	output_buffer[tensor_iterator] = my_output;
         }
     }
+#endif // USE_TENSORFLOW
 }
 
 void
-inference_tf_predict() {
+inference_tf_predict(void) {
+#ifdef USE_TENSORFLOW
 	const auto tflite_status =
 			s_interpreter->Invoke();
 	assert(tflite_status == kTfLiteOk);
+#endif // USE_TENSORFLOW
 }

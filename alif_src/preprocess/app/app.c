@@ -8,8 +8,8 @@
 
 #include <parameters.h>
 
-// #define ADD_HARDWARE_CODE 1
-// #define ADD_PREPROCESS_CODE 1
+#define ADD_HARDWARE_CODE 1
+#define ADD_PREPROCESS_CODE 1
 
 /// Audio DSP
 #include <hann_window_scale_2048.h>
@@ -25,7 +25,6 @@ current_state = APP_STATE_INIT;
 #define INPUT_DIRECTORY INPUT
 #define OUTPUT_DIRECTORY OUTPUT
 #define OVERWRITE_FILE_IS_OKAY true
-
 
 #ifdef ADD_PREPROCESS_CODE
 /// Audio DSP
@@ -97,7 +96,6 @@ void
 app_setup(void) {
     printf("app_setup()\r\n");
 
-
     #ifdef ADD_HARDWARE_CODE
     setup_led();
     #endif // ADD_HARDWARE_CODE
@@ -105,12 +103,12 @@ app_setup(void) {
     inference_tf_setup();
 
     #ifdef ADD_HARDWARE_CODE
-    if (!sd_card_setup()) {
-        printf("Failed to setup SD card\r\n");
-    }
-    else {
-        printf("Sucessfully setup SD card\r\n");
-    }
+    // if (!sd_card_setup()) {
+    //     printf("Failed to setup SD card\r\n");
+    // }
+    // else {
+    //     printf("Sucessfully setup SD card\r\n");
+    // }
     #endif // ADD_HARDWARE_CODE
     
     #ifdef ADD_PREPROCESS_CODE

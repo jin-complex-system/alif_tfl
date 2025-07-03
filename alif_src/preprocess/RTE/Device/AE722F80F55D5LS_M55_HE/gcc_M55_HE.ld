@@ -86,6 +86,12 @@ SECTIONS
     LONG ( ADDR(.code.at_itcm) )
     LONG ( SIZEOF(.code.at_itcm)/4 )
 
+    /* Code in mel_spectrogram_buffer
+    LONG ( LOADADDR(.code.itcm.at_maram) )
+    LONG ( ADDR(.code.itcm.at_maram) )
+    LONG ( SIZEOF(.code.itcm.at_maram)/4 )
+     */
+
     /* Data in SRAM0 */
     LONG ( LOADADDR(.data.sram0.at_mram) )
     LONG ( ADDR(.data.sram0.at_mram) )
@@ -114,6 +120,11 @@ SECTIONS
   {
     *(.bss.noinit.ram_vectors)
   } > ITCM
+
+  .code.itcm.at_mram : ALIGN(16)
+  {
+    /*model_orbw_19_Q_HE_vela_tflite*/
+  }
 
   .code.at_itcm : ALIGN(8)
   {
@@ -166,6 +177,14 @@ SECTIONS
     * (.bss.audio_input_buffer)
     * (.bss.power_spectrum_buffer)
     * (.bss.mel_spectrogram_buffer)
+
+    * (.bss.han_window_scale*)
+    * (.bss.han_window_no_scale*)
+    * (.bss.mel_centre_frequencies_float_*)
+    * (.bss.mel_centre_frequencies_next_bin_*)
+    * (.bss.mel_centre_frequencies_prev_bin_*)
+    * (.bss.mel_centre_frequencies_weights_*)
+
     * (.bss.s_tensorArena)
     * (.bss.model_orbw_19_Q_HE_vela_tflite)
     
