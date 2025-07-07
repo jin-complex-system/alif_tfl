@@ -4,6 +4,9 @@ cbuild-pack:
       selected-by-pack:
         - ARM::CMSIS
         - ARM::CMSIS@6.0.0
+    - resolved-pack: ARM::CMSIS-DSP@1.16.0
+      selected-by-pack:
+        - ARM::CMSIS-DSP@1.16.0
     - resolved-pack: ARM::CMSIS-DSP@1.16.2
       selected-by-pack:
         - ARM::CMSIS-DSP
@@ -11,6 +14,9 @@ cbuild-pack:
     - resolved-pack: ARM::CMSIS-NN@4.1.0
       selected-by-pack:
         - ARM::CMSIS-NN@4.1.0
+    - resolved-pack: ARM::CMSIS-NN@6.0.0
+      selected-by-pack:
+        - ARM::CMSIS-NN@6.0.0
     - resolved-pack: ARM::CMSIS-NN@7.0.0
       selected-by-pack:
         - ARM::CMSIS-NN
@@ -26,22 +32,37 @@ cbuild-pack:
     - resolved-pack: Arm::ethos-u-core-driver@1.24.11
       selected-by-pack:
         - Arm::ethos-u-core-driver
+    - resolved-pack: tensorflow::flatbuffers@1.24.8
+      selected-by-pack:
+        - tensorflow::flatbuffers@1.24.8
     - resolved-pack: tensorflow::flatbuffers@1.24.11
       selected-by-pack:
         - tensorflow::flatbuffers
         - tensorflow::flatbuffers@1.24.11
+    - resolved-pack: tensorflow::gemmlowp@1.24.8
+      selected-by-pack:
+        - tensorflow::gemmlowp@1.24.8
     - resolved-pack: tensorflow::gemmlowp@1.24.11
       selected-by-pack:
         - tensorflow::gemmlowp
         - tensorflow::gemmlowp@1.24.11
+    - resolved-pack: tensorflow::kissfft@1.24.8
+      selected-by-pack:
+        - tensorflow::kissfft@1.24.8
     - resolved-pack: tensorflow::kissfft@1.24.11
       selected-by-pack:
         - tensorflow::kissfft
         - tensorflow::kissfft@1.24.11
+    - resolved-pack: tensorflow::ruy@1.24.8
+      selected-by-pack:
+        - tensorflow::ruy@1.24.8
     - resolved-pack: tensorflow::ruy@1.24.11
       selected-by-pack:
         - tensorflow::ruy
         - tensorflow::ruy@1.24.11
+    - resolved-pack: tensorflow::tensorflow-lite-micro@1.24.8
+      selected-by-pack:
+        - tensorflow::tensorflow-lite-micro@1.24.8
     - resolved-pack: tensorflow::tensorflow-lite-micro@1.24.11
       selected-by-pack:
         - tensorflow::tensorflow-lite-micro

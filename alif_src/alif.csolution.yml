@@ -19,17 +19,17 @@ solution:
 
   packs:
     - pack: AlifSemiconductor::Ensemble
-    - pack: ARM::CMSIS
-    - pack: ARM::CMSIS-DSP
-    - pack: ARM::CMSIS-NN # Unsure which version
-    - pack: ARM::ethos-u-core-driver@1.24.11
+    - pack: ARM::CMSIS@6.0.0
+    - pack: ARM::CMSIS-DSP@1.16.0
+    - pack: ARM::CMSIS-NN@6.0.0
+    # - pack: ARM::ethos-u-core-driver@1.24.11
 
     # TensorFlow Lite Micro
-    - pack: tensorflow::flatbuffers@1.24.11
-    - pack: tensorflow::gemmlowp@1.24.11
-    - pack: tensorflow::kissfft@1.24.11
-    - pack: tensorflow::ruy@1.24.11
-    - pack: tensorflow::tensorflow-lite-micro@1.24.11
+    - pack: tensorflow::flatbuffers
+    - pack: tensorflow::gemmlowp
+    - pack: tensorflow::kissfft
+    - pack: tensorflow::ruy
+    - pack: tensorflow::tensorflow-lite-micro@1.24.8
 
   target-types:
     - type: HE

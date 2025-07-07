@@ -40,7 +40,7 @@
 #define RTE_DataExchange_Math_kissfft     /* kissfft */
 /* tensorflow::Data Processing:Math:ruy&tensorflow@1.24.11 */
 #define RTE_DataProcessing_Math_ruy     /* ruy */
-/* tensorflow::Machine Learning:TensorFlow:Kernel&Ethos-U@1.24.11 */
+/* tensorflow::Machine Learning:TensorFlow:Kernel&Ethos-U@1.24.8 */
 #define RTE_ML_TF_LITE     /* TF */
 
 
