@@ -10,19 +10,17 @@ solution:
   # Select used compiler
   compiler: GCC
   misc:
-  - C:
-      - -std=c99
-      - -fdata-sections
-      - -flax-vector-conversions
-      - -fno-exceptions
-      - -fno-rtti      
+    - C:
+        - -std=c99
+        - -fdata-sections
+        - -flax-vector-conversions
+        - -fno-exceptions
+        - -fno-rtti
 
   packs:
-    - pack: AlifSemiconductor::Ensemble@1.3.4
-    
-    # CMSIS and ARM
-    - pack: ARM::CMSIS@6.0.0
-    - pack: ARM::CMSIS-DSP@1.16.2
+    - pack: AlifSemiconductor::Ensemble
+    - pack: ARM::CMSIS
+    - pack: ARM::CMSIS-DSP
     - pack: ARM::CMSIS-NN # Unsure which version
     - pack: ARM::ethos-u-core-driver@1.24.11
 
@@ -54,7 +52,7 @@ solution:
       debug: off
 
   define:
-  # Place CMake options here?
+    # Place CMake options here?
     - UNICODE
     - _UNICODE
     - ETHOSU55

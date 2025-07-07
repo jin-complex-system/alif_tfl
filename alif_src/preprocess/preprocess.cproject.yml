@@ -41,7 +41,7 @@ project:
         # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
         # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
         # - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
-      
+
         # utils
         - file: ../libs/dsp_preprocessing/utils/include/convert_complex.h
         - file: ../libs/dsp_preprocessing/utils/src/convert_complex.c
@@ -238,7 +238,8 @@ project:
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:core
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:utility
     # - component: AlifSemiconductor::Device:OSPI HYPERRAM XIP
-    - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:Initialization
+        Helper&Source
     - component: AlifSemiconductor::Device:SE runtime Services:core&Source
 
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor MT9M114
@@ -266,3 +267,5 @@ project:
     - component: tensorflow::Data Processing:Math:kissfft
     - component: tensorflow::Data Processing:Math:ruy
     - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
+  packs:
+    - pack: Arm::ethos-u-core-driver
