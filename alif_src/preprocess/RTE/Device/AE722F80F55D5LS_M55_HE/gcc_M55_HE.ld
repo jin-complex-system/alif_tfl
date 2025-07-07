@@ -1,6 +1,6 @@
 /* This file was ported to work on Alif Semiconductor Ensemble family of devices. */
 
-/* Copyright (C) 2023 Alif Semiconductor - All Rights Reserved.
+/* Copyright (C) 2022-2024 Alif Semiconductor - All Rights Reserved.
  * Use, distribution and modification of this code is permitted under the
  * terms stated in the Alif Semiconductor Software License Agreement
  *
@@ -27,8 +27,8 @@
  * limitations under the License.
  */
 
-__STACK_SIZE    = 0x00002000;
-__HEAP_SIZE     = 0x00004000;
+__STACK_SIZE    = 0x00003000;
+__HEAP_SIZE     = 0x00008000;
 __APP_HEAP_SIZE = 0x00004000;
 __ROM_BASE      = 0x80000000;
 __ROM_SIZE      = 0x00200000;
@@ -68,14 +68,29 @@ SECTIONS
     *tcm_partition*(.text .rodata*)
 
     *lv_*(.text .rodata*)
+    *libg.a:*printf*(.text* .rodata*)
+    *libstdc++.a:cp-demangle.o(.text* .rodata*)
+    *flatbuffer*.obj(.text .rodata*)
+    *CMSIS*.obj(.text .rodata*)
 
     *(startup_ro_data)
+
+    *(.text*)
+
+    . = ALIGN(8);
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+    . = ALIGN(8);
+    __exidx_start = .;
+    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    __exidx_end = .;
+
     . = ALIGN(16);
   } > MRAM
 
   .copy.table : ALIGN(4)
   {
     __copy_table_start__ = .;
+
     /* Data in DTCM */
     LONG ( LOADADDR(.data.at_dtcm) )
     LONG ( ADDR(.data.at_dtcm) )
@@ -85,18 +100,6 @@ SECTIONS
     LONG ( LOADADDR(.code.at_itcm) )
     LONG ( ADDR(.code.at_itcm) )
     LONG ( SIZEOF(.code.at_itcm)/4 )
-
-    /* Code in mel_spectrogram_buffer
-    LONG ( LOADADDR(.code.itcm.at_maram) )
-    LONG ( ADDR(.code.itcm.at_maram) )
-    LONG ( SIZEOF(.code.itcm.at_maram)/4 )
-     */
-
-    /* Data in SRAM0 */
-    LONG ( LOADADDR(.data.sram0.at_mram) )
-    LONG ( ADDR(.data.sram0.at_mram) )
-    LONG ( SIZEOF(.data.sram0.at_mram)/4 )
-
     __copy_table_end__ = .;
     . = ALIGN(16);
   } > MRAM
@@ -104,101 +107,39 @@ SECTIONS
   .zero.table : ALIGN(4)
   {
     __zero_table_start__ = .;
-    LONG (ADDR(.bss.itcm))
-    LONG (SIZEOF(.bss.itcm)/4)
     LONG (ADDR(.bss))
     LONG (SIZEOF(.bss)/4)
     LONG (ADDR(.bss.at_sram0))
     LONG (SIZEOF(.bss.at_sram0)/4)
-    LONG (ADDR(.bss.at_sram1))
-    LONG (SIZEOF(.bss.at_sram1)/4)
     __zero_table_end__ = .;
     . = ALIGN(16);
   } > MRAM
 
-  .vectors.itcm (NOLOAD) : ALIGN(2048)
-  {
-    *(.bss.noinit.ram_vectors)
-  } > ITCM
-
-  .code.itcm.at_mram : ALIGN(16)
-  {
-    /*model_orbw_19_Q_HE_vela_tflite*/
-  }
-
   .code.at_itcm : ALIGN(8)
   {
-    *(.text*)
-
-    /* ITCM has only fast LVGL and RAM vectors */
-    *(fast_code)
     . = ALIGN(16);
   } > ITCM AT > MRAM
 
-  .text.itcm.at_mram : ALIGN(8)
-  {
-    /* ITCM has only fast LVGL and RAM vectors */
-    *(fast_code)
-  } > ITCM AT> MRAM
-
   .data.at_dtcm : ALIGN(8)
   {
-    /* DTCM has all read-write data, including NPU activation buffer and audio processing buffers */
     *(vtable)
     *(.data)
     *(.data*)
     *arm_common_tables*(.data* .rodata*)
 
     KEEP(*(.jcr*))
-    
-    . = ALIGN(8);
-    *(.ARM.extab* .gnu.linkonce.armextab.*)
-    . = ALIGN(8);
-    __exidx_start = .;
-    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    __exidx_end = .;
+
     . = ALIGN(16);
-    
   } > DTCM AT > MRAM
 
-  /* Place non-zero code/data here if required in SRAM0 */
-  .data.sram0.at_mram : ALIGN(8)
+  .bss.at_sram0 (NOLOAD) : ALIGN(8)
   {
-    * (ifm)
-  } > SRAM0 AT> MRAM
-
-  .code.sram0.at_mram : ALIGN(8)
-  {
-    * (.bss.model_orbw_19_Q_HE_vela_tflite)
-  }
-
-  .bss.at_sram0 : ALIGN(8)
-  {
-    * (.bss.audio_input_buffer)
-    * (.bss.power_spectrum_buffer)
-    * (.bss.mel_spectrogram_buffer)
-
-    * (.bss.han_window_scale*)
-    * (.bss.han_window_no_scale*)
-    * (.bss.mel_centre_frequencies_float_*)
-    * (.bss.mel_centre_frequencies_next_bin_*)
-    * (.bss.mel_centre_frequencies_prev_bin_*)
-    * (.bss.mel_centre_frequencies_weights_*)
-
-    * (.bss.s_tensorArena)
-    * (.bss.model_orbw_19_Q_HE_vela_tflite)
-    
+    *(.bss.audio_input_buffer)
+    *(.bss.power_spectrum_buffer)
+    *(.bss.mel_spectrogram_buffer)
+    *(.bss.s_tensorArena)
+    *(.bss.s_microOpResolver)
   } > SRAM0
-  
-
-  .bss.at_sram1 : ALIGN(8)
-  {
-    
-  } > SRAM1
-
-  .bss.itcm (NOLOAD) : ALIGN(8)
-  {
-  } > ITCM
 
   .bss (NOLOAD) : ALIGN(8)
   {
@@ -288,17 +229,7 @@ SECTIONS
     *(SORT(.dtors.*))
     *(.dtors)
 
-    . = ALIGN(8);
-    *(.ARM.extab* .gnu.linkonce.armextab.*)
-    . = ALIGN(8);
-    __exidx_start = .;
-    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    __exidx_end = .;
-
-    . = ALIGN(4);
-    *(.text*)
     *(.rodata*)
-
     *(nn_model)
     *(labels)
     *(ifm)

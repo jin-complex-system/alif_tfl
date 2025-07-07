@@ -64,19 +64,17 @@ solution:
   # Select used compiler
   compiler: GCC
   misc:
-  - C:
-      - -std=c99
-      - -fdata-sections
-      - -flax-vector-conversions
-      - -fno-exceptions
-      - -fno-rtti      
+    - C:
+        - -std=c99
+        - -fdata-sections
+        - -flax-vector-conversions
+        - -fno-exceptions
+        - -fno-rtti
 
   packs:
-    - pack: AlifSemiconductor::Ensemble@1.3.4
-    
-    # CMSIS and ARM
-    - pack: ARM::CMSIS@6.0.0
-    - pack: ARM::CMSIS-DSP@1.16.2
+    - pack: AlifSemiconductor::Ensemble
+    - pack: ARM::CMSIS
+    - pack: ARM::CMSIS-DSP
     - pack: ARM::CMSIS-NN # Unsure which version
     - pack: ARM::ethos-u-core-driver@1.24.11
 
@@ -108,7 +106,7 @@ solution:
       debug: off
 
   define:
-  # Place CMake options here?
+    # Place CMake options here?
     - UNICODE
     - _UNICODE
     - ETHOSU55
@@ -119,6 +117,7 @@ solution:
     - project: blinky/blinky.cproject.yml
     - project: hello/hello.cproject.yml
     - project: hello_rtt/hello_rtt.cproject.yml
+    - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
     - project: preprocess/preprocess.cproject.yml
 
 ```
@@ -134,15 +133,6 @@ solution:
 cd alif_src/libs
 git submodule add --name dsp_preprocess https://github.com/jin-complex-system/dsp_preprocessing
 cd dsp_preprocessing && git checkout <desired_branch>
-```
-- For some versions, you may need to change the following inside `dsp_preprocessing/audio_dsp/src/hann_window_compute.c` to the following:
-```C
-const double
-MY_2_PI = 6.28318530717958623199592693708837032318115234375;
-
-// const double
-// MY_2_PI = 2 * M_PI;
-```
 
 7. Inside your new directory `preprocess`, change `preprocess.cproject.yml` to the following:
 ```yml
@@ -153,6 +143,15 @@ project:
       files:
         - file: parameters.h
         - file: main.c
+        - file: app/app.h
+        - file: app/app.c
+        - file: led/led.h
+        - file: led/led.c
+        - file: sd_card/sd_card.h
+        - file: sd_card/sd_card.c
+        - file: inference/inference_definitions.h
+        - file: inference/inference_tf.h
+        - file: inference/inference_tf.cpp
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -169,6 +168,9 @@ project:
         - file: ../libs/FatFS/ffconf.h
         - file: ../libs/FatFS/ffsystem.c
         - file: ../libs/FatFS/ffunicode.c
+    - group: models
+      files:
+        - file: ../models/model_orbw_19_Q_HE_vela.h
     - group: dsp_preprocess
       files:
         # # supporting library for dsp_preprocess
@@ -177,7 +179,7 @@ project:
         # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
         # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
         # - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
-      
+
         # utils
         - file: ../libs/dsp_preprocessing/utils/include/convert_complex.h
         - file: ../libs/dsp_preprocessing/utils/src/convert_complex.c
@@ -203,16 +205,98 @@ project:
         - file: ../libs/dsp_preprocessing/audio_dsp/src/mel_utils.c
         - file: ../libs/dsp_preprocessing/audio_dsp/include/power_spectrum.h
         - file: ../libs/dsp_preprocessing/audio_dsp/src/power_spectrum.c
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/power_to_decibel.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/src/power_to_decibel.c
 
         # audio_dsp constants - hann window
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_scale_1024.h
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_no_scale_1024.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_scale_2048.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_window/hann_window/hann_window_no_scale_2048.h
 
-        # audio_dsp constants - mel constants
-        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_44100.h
-        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_44100.h
-        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_44100.h
-        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_44100.h
+        # audio_dsp constants - mel float
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_32_fft_2048_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_float/mel_centre_frequencies_float_mel_64_fft_2048_sr_44100_fmax_8000.h
+
+        # audio_dsp constants - Mel next bin
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_32_fft_2048_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/mel_centre_frequencies_next_bin_mel_64_fft_2048_sr_44100_fmax_8000.h
+
+        # Precomputed Constants - Mel prev bin
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_32_fft_2048_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/mel_centre_frequencies_prev_bin_mel_64_fft_2048_sr_44100_fmax_8000.h
+
+        # Precomputed Constants - Mel weights
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_1024_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_32_fft_2048_sr_44100_fmax_8000.h
+
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_22048_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_22048_fmax_8000.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_0.h
+        - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_8000.h
 
   output:
     base-name: $Project$
@@ -226,6 +310,9 @@ project:
     - ../libs/FatFS/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
+
+    # Models
+    - ../models
 
     # # dsp_preprocess: supporting library for dsp_preprocess
     # - ../libs/dsp_preprocessing/external/kissfft/
@@ -289,7 +376,8 @@ project:
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:core
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:utility
     # - component: AlifSemiconductor::Device:OSPI HYPERRAM XIP
-    - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:Initialization
+        Helper&Source
     - component: AlifSemiconductor::Device:SE runtime Services:core&Source
 
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor MT9M114
@@ -317,9 +405,15 @@ project:
     - component: tensorflow::Data Processing:Math:kissfft
     - component: tensorflow::Data Processing:Math:ruy
     - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
+  packs:
+    - pack: Arm::ethos-u-core-driver
+
 ```
 
-8. See [Known Issues](#known-issues) for any issues during building process
+8. Copy the memory configuration from [`alif-e7-m55-he.ld`](https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/kws/linker/alif-e7-m55-he.ld) to [`preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld`](alif_tfl/preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld)
+- Add and remove buffers as needed in `.bss.at_sram0`
+
+9. See [Known Issues](#known-issues) for any issues during building process
 
 ## Known Issues
 
