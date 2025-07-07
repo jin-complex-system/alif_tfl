@@ -39,6 +39,9 @@ float
 mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH];
 #endif // ADD_PREPROCESS_CODE
 
+#define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
+inference_output_data_type
+prediction_buffer[PREDICTION_BUFFER_LENGTH];
 
 static inline
 void
@@ -220,18 +223,73 @@ void
 app_main_loop(void) {
     printf("app_main_loop()\r\n");
 
-    while(1) {
-        #define NUM_ITERATIONS 20
-        // preprocess_buffer(NUM_ITERATIONS);
-        preprocess_buffer_measure_individual(NUM_ITERATIONS);
+    current_state = APP_STATE_CHECK_BUTTON;
+    while(true) {
+		switch(current_state) {
+            case APP_STATE_CHECK_BUTTON:
+                // TODO: Implement button checking mechanism
 
-        printf("Done preprocessing %u iterations\r\n", NUM_ITERATIONS);
+                current_state = APP_STATE_SET_DEFAULT_BUFFER;
+                break;
+            case APP_STATE_SET_DEFAULT_BUFFER:
+                memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
+                memset(prediction_buffer, 0, sizeof(prediction_buffer));
+
+                current_state = APP_STATE_READ_SD_CARD;
+                break;
+            case APP_STATE_READ_SD_CARD:
+                // TODO: Implement reading audio from SD card
+
+                current_state = APP_STATE_PREPROCESS;
+                break;
+            case APP_STATE_PREPROCESS:
+                #define NUM_ITERATIONS 20
+
+                // preprocess_buffer(NUM_ITERATIONS);
+                preprocess_buffer_measure_individual(NUM_ITERATIONS);
+
+                printf("Done preprocessing %u iterations\r\n", NUM_ITERATIONS);
+
+                // TODO: Implement scaling for mel spectrogram
+
+                current_state = APP_STATE_INFERENCE;
+                break;
+            case APP_STATE_INFERENCE:
+                // inference_tf_set_input(
+                //     (inference_input_data_type*)mel_spectrogram_buffer,
+                //     MEL_SPECTROGRAM_BUFFER_LENGTH / 4
+                // );
+                inference_tf_predict();
+
+                current_state = APP_STATE_PROCESS_INFERENCE;
+                break;
+            case APP_STATE_PROCESS_INFERENCE:
+                // inference_tf_get_output(
+                //     prediction_buffer,
+                //     PREDICTION_BUFFER_LENGTH
+                // );
+
+                int8_t best_result = -125.0f;
+                uint16_t best_class_id = PREDICTION_BUFFER_LENGTH;
+
+                for (uint16_t class_iterator = 0; class_iterator < PREDICTION_BUFFER_LENGTH; class_iterator++) {
+                    if (prediction_buffer[class_iterator] > best_result) {
+                        best_class_id = class_iterator;
+                        best_result = prediction_buffer[class_iterator];
+                    }
+                }
+
+                printf("Best class: %u, with result %c\r\n", best_class_id, best_result);
+                current_state = APP_STATE_SAVE_SD_CARD;
+                break;
+            case APP_STATE_SAVE_SD_CARD:
+                // TODO: Implement saving results to SD card
+
+                current_state = APP_STATE_CHECK_BUTTON;
+                break;
+            default:
+                current_state = APP_STATE_CHECK_BUTTON;
+                break;
+        }
     }
-
-    // TODO: Enter into main loop with app-defined states
-    // while(true) {
-	// 	switch(current_state) {
-    //         case APP_STATE_SET_DEFAULT_BUFFER:
-    //     }
-    // }
 }

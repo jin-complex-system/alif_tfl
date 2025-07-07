@@ -138,6 +138,7 @@ SECTIONS
     *(.bss.audio_input_buffer)
     *(.bss.power_spectrum_buffer)
     *(.bss.mel_spectrogram_buffer)
+    *(.bss.prediction_buffer)
     *(.bss.s_tensorArena)
     *(.bss.s_microOpResolver)
   } > SRAM0
