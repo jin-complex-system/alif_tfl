@@ -31,7 +31,8 @@ __STACK_SIZE    = 0x00003000;
 __HEAP_SIZE     = 0x00008000;
 __APP_HEAP_SIZE = 0x00004000;
 __ROM_BASE      = 0x80000000;
-__ROM_SIZE      = 0x00200000;
+/*__ROM_SIZE      = 0x00200000;*/
+__ROM_SIZE      = 0x00580000; /* 5.5M */
 
 TGU_BLOCK_SIZE   = 16384;
 
@@ -150,7 +151,7 @@ SECTIONS
 
     . = ALIGN(8);
     __bss_end__ = .;
-  } > DTCM
+  } > SRAM0
 
   .nonsecure0_region (NOLOAD) :
   {
