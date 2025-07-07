@@ -29,7 +29,7 @@ s_interpreter = nullptr;
 /// An area of memory to use for input, output, and intermediate arrays.
 /// (Can be adjusted based on the model needs.)
 constexpr uint32_t
-kTensorArenaSize = 300u * 1000u;
+kTensorArenaSize = 800u * 1024u;
 
 #ifdef TENSORARENA_NONCACHE
 static uint8_t
@@ -40,7 +40,7 @@ s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 #endif // TENSORARENA_NONCACHE
 
 static
-tflite::MicroMutableOpResolver<26> s_microOpResolver; // NOLINT
+tflite::MicroMutableOpResolver<27> s_microOpResolver; // NOLINT
 
 static inline
 void
@@ -78,7 +78,8 @@ add_operators(void) {
 void
 inference_tf_setup(void) {
 #ifdef USE_TENSORFLOW
-    s_model = tflite::GetModel(model_orbw_19_Q_HE_vela_tflite);
+    s_model = tflite::GetModel(nn_model);
+	printf("model version: %u\r\n", s_model->version());
 	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
 
     add_operators();
@@ -90,11 +91,14 @@ inference_tf_setup(void) {
 		s_tensorArena,
         kTensorArenaSize);
     s_interpreter = &static_interpreter;
+	printf("Added static interpreter\r\n");
 
-    /// Allocate memory from the tensor_arena for the model's tensors.
+    /// Allocate memory from the tensor_arena for the model's tensors
     const TfLiteStatus allocate_status =
     		s_interpreter->AllocateTensors();
+	printf("Allocated tensors interpreter, with status: %i\r\n", allocate_status);
     assert(allocate_status == kTfLiteOk);
+
 #endif // USE_TENSORFLOW
 }
 

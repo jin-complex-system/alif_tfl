@@ -186,15 +186,15 @@ app_setup(void) {
     setup_led();
     #endif // ADD_HARDWARE_CODE
 
-    // inference_tf_setup();
+    inference_tf_setup();
 
     #ifdef ADD_HARDWARE_CODE
-    // if (!sd_card_setup()) {
-    //     printf("Failed to setup SD card\r\n");
-    // }
-    // else {
-    //     printf("Sucessfully setup SD card\r\n");
-    // }
+    if (!sd_card_setup()) {
+        printf("Failed to setup SD card\r\n");
+    }
+    else {
+        printf("Sucessfully setup SD card\r\n");
+    }
     #endif // ADD_HARDWARE_CODE
     
     #ifdef ADD_PREPROCESS_CODE
