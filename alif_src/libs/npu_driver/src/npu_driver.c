@@ -47,7 +47,7 @@ int arm_ethosu_npu_init(void) {
 
     /* Initialise Ethos-U device */
     void* const ethosu_base_address = (void *)(ETHOS_U_BASE_ADDR);
-    printf("Initialising Ethos-U device@0x%u\r\n", (uint32_t)(ETHOS_U_BASE_ADDR));
+    printf("Initialising Ethos-U device@0x%p\r\n", (uint32_t)(ETHOS_U_BASE_ADDR));
 
     err = ethosu_init(
         &ethosu_drv,         /* Ethos-U driver device pointer */
