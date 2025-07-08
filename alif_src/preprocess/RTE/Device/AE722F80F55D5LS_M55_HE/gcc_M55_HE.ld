@@ -88,7 +88,7 @@ SECTIONS
     . = ALIGN(16);
   } > MRAM
 
-  .copy.table : ALIGN(4)
+  .copy.table : ALIGN(16)
   {
     __copy_table_start__ = .;
 
@@ -105,7 +105,7 @@ SECTIONS
     . = ALIGN(16);
   } > MRAM
 
-  .zero.table : ALIGN(4)
+  .zero.table : ALIGN(16)
   {
     __zero_table_start__ = .;
     LONG (ADDR(.bss))
@@ -116,12 +116,12 @@ SECTIONS
     . = ALIGN(16);
   } > MRAM
 
-  .code.at_itcm : ALIGN(8)
+  .code.at_itcm : ALIGN(16)
   {
     . = ALIGN(16);
   } > ITCM AT > MRAM
 
-  .data.at_dtcm : ALIGN(8)
+  .data.at_dtcm : ALIGN(16)
   {
     *(vtable)
     *(.data)
@@ -136,16 +136,16 @@ SECTIONS
   .bss.at_sram0 (NOLOAD) : ALIGN(16)
   {
     *(.bss.NoInit.activation_buf_sram)
-    *(.bss.cache_arena)
+    *(.bss.cache_arena)       . = ALIGN(16);
     *(.bss.audio_input_buffer)
     *(.bss.power_spectrum_buffer)
     *(.bss.mel_spectrogram_buffer)
     *(.bss.prediction_buffer)
-    *(.bss.s_tensorArena)
-    *(.bss.s_microOpResolver)
+    *(.bss.s_tensorArena)     . = ALIGN(16);
+    *(.bss.s_microOpResolver) . = ALIGN(16);
 
     *(.bss.sd_card)
-    *(.bss.ethosu_drv)
+    *(.bss.ethosu_drv) . = ALIGN(16);
     *(.bss.g_fileObject)
   } > SRAM0
 
@@ -161,7 +161,7 @@ SECTIONS
   } > SRAM0
   /* } > DTCM */ /* Original */
 
-  .nonsecure0_region (NOLOAD) :
+  .nonsecure0_region (NOLOAD) : ALIGN(16)
   {
     . = ALIGN(TGU_BLOCK_SIZE);
     __ns_region_0_start = .;
@@ -172,52 +172,52 @@ SECTIONS
     __ns_region_0_end = .;
   } > DTCM
 
-  .__app_heap (NOLOAD) : ALIGN(8)
+  .__app_heap (NOLOAD) : ALIGN(16)
   {
-     . = ALIGN(8);
+     . = ALIGN(16);
      __RAM_segment_used_end__ = .;
      . = . + __APP_HEAP_SIZE;
-     . = ALIGN(8);
+     . = ALIGN(16);
    } >DTCM
 
-  .heap (NOLOAD) : ALIGN(8)
+  .heap (NOLOAD) : ALIGN(16)
   {
     __end__ = .;
     PROVIDE(end = .);
     . = . + __HEAP_SIZE;
-    . = ALIGN(8);
+    . = ALIGN(16);
     __HeapLimit = .;
   } > DTCM
 
-  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(8)
+  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(16)
   {
     __StackLimit = .;
     . = . + __STACK_SIZE;
-    . = ALIGN(8);
+    . = ALIGN(16);
     __StackTop = .;
   } > DTCM
   PROVIDE(__stack = __StackTop);
 
-  .readonly.at_mram : ALIGN(8)
+  .readonly.at_mram : ALIGN(16)
   {
     /* Use wildcards to mop up any read-only not directed to TCM */
     KEEP(*(.init))
     KEEP(*(.fini))
 
-    . = ALIGN(4);
+    . = ALIGN(16);
     /* preinit data */
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP(*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
 
-    . = ALIGN(4);
+    . = ALIGN(16);
     /* init data */
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP(*(SORT(.init_array.*)))
     KEEP(*(.init_array))
     PROVIDE_HIDDEN (__init_array_end = .);
 
-    . = ALIGN(4);
+    . = ALIGN(16);
     /* finit data */
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP(*(SORT(.fini_array.*)))
@@ -239,7 +239,7 @@ SECTIONS
     *(.dtors)
 
     *(.rodata*)
-    *(nn_model)
+    *(nn_model) . = ALIGN(16);
     *(labels)
     *(ifm)
 
