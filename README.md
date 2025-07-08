@@ -123,7 +123,7 @@ solution:
 ```
 - Note that versions of different CMSIS-Packs may need to be changed in the future
 
-4. Locate the CMSIS packs. In Windows, it is located in `C:\Users\$USER\AppData\Local\Arm\Packs\AlifSemiconductor\Ensemble\1.3.4`, where the current version is `1.3.4`
+4. Locate the CMSIS packs. In Windows, it is located in `C:\Users\$USER\AppData\Local\Arm\Packs\AlifSemiconductor\Ensemble\1.3.0`, where the current version is `1.3.0`
 
 5. Copy over the following directories to `alif_src\libs`:
 - `FatFS` directory from `C:\Users\$USER\AppData\Local\Arm\Packs\AlifSemiconductor\Ensemble\1.3.4\Boards\DevKit-e7\Templates\Baremetal`'
