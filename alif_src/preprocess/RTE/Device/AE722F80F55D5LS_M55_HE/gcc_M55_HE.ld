@@ -133,26 +133,33 @@ SECTIONS
     . = ALIGN(16);
   } > DTCM AT > MRAM
 
-  .bss.at_sram0 (NOLOAD) : ALIGN(8)
+  .bss.at_sram0 (NOLOAD) : ALIGN(16)
   {
+    *(.bss.NoInit.activation_buf_sram)
+    *(.bss.cache_arena)
     *(.bss.audio_input_buffer)
     *(.bss.power_spectrum_buffer)
     *(.bss.mel_spectrogram_buffer)
     *(.bss.prediction_buffer)
     *(.bss.s_tensorArena)
     *(.bss.s_microOpResolver)
+
+    *(.bss.sd_card)
+    *(.bss.ethosu_drv)
+    *(.bss.g_fileObject)
   } > SRAM0
 
-  .bss (NOLOAD) : ALIGN(8)
+  .bss (NOLOAD) : ALIGN(16)
   {
     __bss_start__ = .;
     *(.bss)
     *(.bss.*)
     *(COMMON)
 
-    . = ALIGN(8);
+    . = ALIGN(16);
     __bss_end__ = .;
   } > SRAM0
+  /* } > DTCM */ /* Original */
 
   .nonsecure0_region (NOLOAD) :
   {

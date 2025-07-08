@@ -5,6 +5,7 @@
 #include <sd_card.h>
 #include <led.h>
 #include <inference_tf.h>
+#include <npu_driver.h>
 
 #include <parameters.h>
 
@@ -33,15 +34,15 @@ audio_data_type
 audio_input_buffer[INPUT_BUFFER_LENGTH];
 
 float
-power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH];
+power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)));;
 
 float
-mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH];
+mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));;
 #endif // ADD_PREPROCESS_CODE
 
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
 inference_output_data_type
-prediction_buffer[PREDICTION_BUFFER_LENGTH];
+prediction_buffer[PREDICTION_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 static inline
 void
@@ -185,22 +186,36 @@ void
 app_setup(void) {
     printf("app_setup()\r\n");
 
-    #ifdef ADD_HARDWARE_CODE
+#if defined(ARM_NPU)
+    int state;
+    /* If Arm Ethos-U NPU is to be used, we initialise it here */
+    if (0 != (state = arm_ethosu_npu_init())) {
+        printf("Something went wrong with NPU driver!\r\n");
+    }
+    else {
+        printf("NPU driver setup!\r\n");
+    }
+    
+#else
+    printf("ARM NPU not supported!\r\n");
+#endif // ARM_NPU
+
+#ifdef ADD_HARDWARE_CODE
     setup_led();
-    #endif // ADD_HARDWARE_CODE
+#endif // ADD_HARDWARE_CODE
 
     inference_tf_setup();
 
-    #ifdef ADD_HARDWARE_CODE
+#ifdef ADD_HARDWARE_CODE
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
     }
     else {
         printf("Sucessfully setup SD card\r\n");
     }
-    #endif // ADD_HARDWARE_CODE
+#endif // ADD_HARDWARE_CODE
     
-    #ifdef ADD_PREPROCESS_CODE
+#ifdef ADD_PREPROCESS_CODE
     initialise_power_spectrum(N_FFT);
 
     printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
@@ -209,12 +224,11 @@ app_setup(void) {
 #else
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
-    #endif // ADD_PREPROCESS_CODE
+#endif // ADD_PREPROCESS_CODE
 
-
-    #ifdef ADD_HARDWARE_CODE
+#ifdef ADD_HARDWARE_CODE
     turn_on_led(LED_RED);
-    #endif // ADD_HARDWARE_CODE
+#endif // ADD_HARDWARE_CODE
 
     current_state = APP_STATE_INIT;
 }
