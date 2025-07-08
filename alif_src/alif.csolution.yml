@@ -15,14 +15,14 @@ solution:
         - -fdata-sections
         - -flax-vector-conversions
         - -fno-exceptions
-        - -fno-rtti
+        - -fno-rtti    
 
   packs:
     - pack: AlifSemiconductor::Ensemble
     - pack: ARM::CMSIS@6.0.0
     - pack: ARM::CMSIS-DSP@1.16.0
     - pack: ARM::CMSIS-NN@6.0.0
-    # - pack: ARM::ethos-u-core-driver@1.24.11
+    - pack: ARM::ethos-u-core-driver@1.24.11
 
     # TensorFlow Lite Micro
     - pack: tensorflow::flatbuffers
