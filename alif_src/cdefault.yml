@@ -2,13 +2,25 @@
 default:
   misc:
     - for-compiler: GCC
+      C-CPP:
+        - -fdata-sections
+        - -fno-function-sections
+      #   # - -ffp-mode=fast
+        - -DDISABLEFLOAT16=1
+
+      # Commented out so we can observe exceptions/errors
+      # CPP:
+      #   - -std=c++14
+      # #   - -fno-exceptions
+      # #   - -fno-unwind-tables
+      #   - -fno-rtti
+
       C:
         - -std=c99
         - -fdata-sections
-        - -flax-vector-conversions
         - -fno-exceptions
-        - -fno-rtti
-
+        - -flax-vector-conversions
+        
       Link:
         - --specs=nosys.specs
         - --entry=Reset_Handler

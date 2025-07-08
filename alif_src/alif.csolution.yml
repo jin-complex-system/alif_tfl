@@ -9,13 +9,6 @@ solution:
 
   # Select used compiler
   compiler: GCC
-  misc:
-    - C:
-        - -std=c99
-        - -fdata-sections
-        - -flax-vector-conversions
-        - -fno-exceptions
-        - -fno-rtti    
 
   packs:
     - pack: AlifSemiconductor::Ensemble
@@ -36,10 +29,12 @@ solution:
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HE
       define:
         - "CORE_M55_HE"
+        - ETHOSU55
     - type: HP
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
       define:
         - "CORE_M55_HP"
+        - ETHOSU55
 
   build-types:
     - type: debug
@@ -55,8 +50,6 @@ solution:
     # Place CMake options here?
     - UNICODE
     - _UNICODE
-    - ETHOSU55
-    - DISABLEFLOAT16
     - Ofast
 
   projects:
