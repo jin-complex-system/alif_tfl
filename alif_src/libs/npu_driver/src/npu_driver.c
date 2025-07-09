@@ -85,7 +85,6 @@ int arm_ethosu_npu_init(void) {
 
     // TODO: Fix NPU IRQ
     printf("NPU IRQ needs to be fixed!\r\n");
-    /*
     /// Initialise the IRQ
     printf("Set EthosU IRQ#: %u, Handler: 0x%p\r\n",
         ETHOS_U_IRQN, arm_ethosu_npu_irq_handler);
@@ -102,7 +101,6 @@ int arm_ethosu_npu_init(void) {
 
     printf("Successfully set EthosU IRQ#: %u, Handler: 0x%p\r\n",
           ETHOS_U_IRQN, arm_ethosu_npu_irq_handler);
-    */
 
     return 0;
 }

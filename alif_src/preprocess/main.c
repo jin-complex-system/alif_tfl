@@ -9,12 +9,34 @@
 
 #include "app/app.h"
 
+#include <string.h>
+
 inline
 static void uart_callback(uint32_t event) {
     // Deliverately left blank
 }
 
+#ifdef COPY_VECTORS
+
+static VECTOR_TABLE_Type MyVectorTable[496] __attribute__((aligned (2048))) __attribute__((section (".bss.noinit.ram_vectors")));
+
+static inline
+void copy_vtor_table_to_ram()
+{
+    if (SCB->VTOR == (uint32_t) MyVectorTable) {
+        return;
+    }
+    memcpy(MyVectorTable, (const void *) SCB->VTOR, sizeof MyVectorTable);
+    __DMB();
+    // Set the new vector table into use.
+    SCB->VTOR = (uint32_t) MyVectorTable;
+    __DSB();
+}
+#endif
+
 int main (void) {
+    copy_vtor_table_to_ram();
+
     // Init pinmux using boardlib
     BOARD_Pinmux_Init();
 

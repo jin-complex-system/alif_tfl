@@ -32,7 +32,7 @@ __HEAP_SIZE     = 0x00008000;
 __APP_HEAP_SIZE = 0x00004000;
 __ROM_BASE      = 0x80000000;
 /*__ROM_SIZE      = 0x00200000;*/
-__ROM_SIZE      = 0x00580000; /* 5.5M */
+__ROM_SIZE      = 0x00580000; # 5.5M
 
 TGU_BLOCK_SIZE   = 16384;
 
@@ -78,9 +78,9 @@ SECTIONS
 
     *(.text*)
 
-    . = ALIGN(8);
+    . = ALIGN(16);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
-    . = ALIGN(8);
+    . = ALIGN(16);
     __exidx_start = .;
     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     __exidx_end = .;
@@ -91,6 +91,11 @@ SECTIONS
   .copy.table : ALIGN(16)
   {
     __copy_table_start__ = .;
+
+    /* Text in ITCM */
+    LONG ( LOADADDR(.text.itcm) )
+    LONG ( ADDR(.text.itcm) )
+    LONG ( SIZEOF(.text.itcm)/4 )
 
     /* Data in DTCM */
     LONG ( LOADADDR(.data.at_dtcm) )
@@ -121,6 +126,19 @@ SECTIONS
     . = ALIGN(16);
   } > ITCM AT > MRAM
 
+  .vectors.itcm (NOLOAD) : ALIGN(2048)
+  {
+    *(.bss.noinit.ram_vectors)
+  } > ITCM
+
+  .text.itcm : ALIGN(16)
+  {
+    /* ITCM has only fast LVGL and RAM vectors */
+    *(fast_code)
+    *(.text ethosu_irq_handler)
+
+  } > ITCM
+
   .data.at_dtcm : ALIGN(16)
   {
     *(vtable)
@@ -148,6 +166,11 @@ SECTIONS
     *(.bss.ethosu_drv) . = ALIGN(16);
     *(.bss.g_fileObject)
   } > SRAM0
+
+
+  .bss.itcm (NOLOAD) : ALIGN(16)
+  {
+  } > ITCM
 
   .bss (NOLOAD) : ALIGN(16)
   {
@@ -178,7 +201,7 @@ SECTIONS
      __RAM_segment_used_end__ = .;
      . = . + __APP_HEAP_SIZE;
      . = ALIGN(16);
-   } >DTCM
+   } > DTCM
 
   .heap (NOLOAD) : ALIGN(16)
   {
