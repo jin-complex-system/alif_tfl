@@ -5,15 +5,16 @@ default:
       C-CPP:
         - -fdata-sections
         - -fno-function-sections
-      #   # - -ffp-mode=fast
+        # - -ffp-mode=fast
         - -DDISABLEFLOAT16=1
+        - -DCOPY_VECTORS=1
 
-      # Commented out so we can observe exceptions/errors
-      # CPP:
-      #   - -std=c++14
-      # #   - -fno-exceptions
-      # #   - -fno-unwind-tables
-      #   - -fno-rtti
+      # If needed, comment out so we can observe exceptions/errors
+      CPP:
+        - -std=c++14
+        - -fno-exceptions
+        - -fno-unwind-tables
+        - -fno-rtti
 
       C:
         - -std=c99
