@@ -283,7 +283,7 @@ app_main_loop(void) {
                 //     PREDICTION_BUFFER_LENGTH
                 // );
 
-                int8_t best_result = -125.0f;
+                int16_t best_result = -125.0f;
                 uint16_t best_class_id = PREDICTION_BUFFER_LENGTH;
 
                 for (uint16_t class_iterator = 0; class_iterator < PREDICTION_BUFFER_LENGTH; class_iterator++) {
@@ -293,7 +293,7 @@ app_main_loop(void) {
                     }
                 }
 
-                printf("Best class: %u, with result %c\r\n", best_class_id, best_result);
+                printf("Best class: %u, with result %i\r\n", best_class_id, best_result);
                 current_state = APP_STATE_SAVE_SD_CARD;
                 break;
             case APP_STATE_SAVE_SD_CARD:
