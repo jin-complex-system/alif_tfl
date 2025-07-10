@@ -4,3 +4,9 @@ tmp/
 *.cbuild-set.yml
 *.cbuild.yml
 *.clangd
+
+
+.vscode/launch.json
+
+# Ignore generated files in project files
+*/RTE/_*
