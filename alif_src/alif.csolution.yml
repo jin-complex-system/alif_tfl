@@ -58,3 +58,4 @@ solution:
     - project: hello_rtt/hello_rtt.cproject.yml
     - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
     - project: preprocess/preprocess.cproject.yml
+    - project: model_inference/model_inference.cproject.yml
