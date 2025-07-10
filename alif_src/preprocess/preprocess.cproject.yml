@@ -7,13 +7,9 @@ project:
         - file: main.c
         - file: app/app.h
         - file: app/app.c
-        - file: led/led.h
-        - file: led/led.c
         - file: sd_card/sd_card.h
         - file: sd_card/sd_card.c
-        - file: inference/inference_definitions.h
-        - file: inference/inference_tf.h
-        - file: inference/inference_tf.cpp
+
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -21,6 +17,15 @@ project:
         - file: ../libs/common_app_utils/logging/uart_tracelib.c
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+    - group: inference
+      files:
+        - file: ../libs/inference/inference_definitions.h
+        - file: ../libs/inference/inference_tf.h
+        - file: ../libs/inference/inference_tf.cpp
+    - group: led
+      files:
+        - file: ../libs/led/led.h
+        - file: ../libs/led/led.c
     - group: FatFS
       files:
         - file: ../libs/FatFS/diskio.h
@@ -178,6 +183,12 @@ project:
     - ../libs/FatFS/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
+
+    # inference
+    - ../libs/inference
+
+    # LED
+    - ../libs/led
 
     # Models
     - ../models
