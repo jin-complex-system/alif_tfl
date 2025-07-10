@@ -20,7 +20,8 @@
                 "rm -f ./blinky/*.cbuild.yml;",
                 "rm -f ./hello/*.cbuild.yml;",
                 "rm -f ./hello_rtt/*.cbuild.yml;",
-                "rm -f ./preprocess/*.cbuild.yml;"
+                "rm -f ./preprocess/*.cbuild.yml;",
+                "rm -f ./model_inference/*.cbuild.yml;"
             ],
             "windows": {
                 "command": [
@@ -28,7 +29,8 @@
                     "rm -Force ./blinky/*.cbuild.yml;",
                     "rm -Force ./hello/*.cbuild.yml;",
                     "rm -Force ./hello_rtt/*.cbuild.yml;",
-                    "rm -Force ./preprocess/*.cbuild.yml;"
+                    "rm -Force ./preprocess/*.cbuild.yml;",
+                    "rm -Force ./model_inference/*.cbuild.yml;"
                 ]
             },
             "problemMatcher": []
