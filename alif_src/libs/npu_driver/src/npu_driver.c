@@ -83,8 +83,6 @@ int arm_ethosu_npu_init(void) {
     printf("\tMACs/cc:    %u\r\n", (uint32_t)(1 << hw_info.cfg.macs_per_cc));
     printf("\tCmd stream: v%u\r\n", hw_info.cfg.cmd_stream_version);
 
-    // TODO: Fix NPU IRQ
-    printf("NPU IRQ needs to be fixed!\r\n");
     /// Initialise the IRQ
     printf("Set EthosU IRQ#: %u, Handler: 0x%p\r\n",
         ETHOS_U_IRQN, arm_ethosu_npu_irq_handler);
@@ -92,8 +90,7 @@ int arm_ethosu_npu_init(void) {
     /// Register the EthosU IRQ handler in our vector table.
     /// Note, this handler comes from the EthosU driver
     NVIC_SetVector(ETHOS_U_IRQN, (uint32_t)arm_ethosu_npu_irq_handler);
-    
-    printf("NVIC_SetVector() done\r\n");
+    printf("NPU NVIC_SetVector() done\r\n");
 
     /// Enable the IRQ
     NVIC_EnableIRQ(ETHOS_U_IRQN);
