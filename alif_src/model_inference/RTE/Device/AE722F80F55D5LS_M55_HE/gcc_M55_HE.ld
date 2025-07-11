@@ -32,7 +32,8 @@ __STACK_SIZE    = 0x00002000;
 __HEAP_SIZE     = 0x00004000;
 __APP_HEAP_SIZE = 0x00004000;
 __ROM_BASE      = 0x80000000;
-__ROM_SIZE      = 0x00200000;
+# __ROM_SIZE      = 0x00200000;
+__ROM_SIZE      = 0x00580000; # 5.5M
 
 TGU_BLOCK_SIZE   = 16384;
 
@@ -102,7 +103,7 @@ SECTIONS
   {
     *(.text*)
     . = ALIGN(16);
-  } > ITCM AT > MRAM
+  } > MRAM
 
   .data.at_dtcm : ALIGN(8)
   {
@@ -120,14 +121,11 @@ SECTIONS
     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     __exidx_end = .;
     . = ALIGN(16);
-  } > DTCM AT > MRAM
+  } > MRAM
 
   .bss.at_sram0 (NOLOAD) : ALIGN(8)
   {
-    *(.bss.lcd_crop_and_interpolate_buf)  /* LCD crop and intrepolate image processing buffer. */
-    *(.bss.lcd_frame_buf)                 /* LCD frame Buffer. */
-    *(.bss.camera_frame_buf)              /* Camer Frame Buffer */
-    *(.bss.camera_frame_bayer_to_rgb_buf) /* (Optional) Camera Frame Buffer for Bayer to RGB Conversion. */
+    
   } > SRAM0
 
   .bss (NOLOAD) : ALIGN(8)
@@ -139,7 +137,7 @@ SECTIONS
 
     . = ALIGN(8);
     __bss_end__ = .;
-  } > DTCM
+  } > SRAM0
 
   .nonsecure0_region (NOLOAD) :
   {
@@ -158,7 +156,7 @@ SECTIONS
      __RAM_segment_used_end__ = .;
      . = . + __APP_HEAP_SIZE;
      . = ALIGN(8);
-   } >DTCM
+   } > DTCM
 
   .heap (NOLOAD) : ALIGN(8)
   {
@@ -219,6 +217,7 @@ SECTIONS
     *(.dtors)
 
     *(.rodata*)
+    *(nn_model)
 
     KEEP(*(.eh_frame*))
     . = ALIGN(16);

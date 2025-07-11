@@ -5,9 +5,11 @@
 
 #include <uart_tracelib.h>
 #include <fault_handler.h>
+#include <se_services_port.h>
 
 #include "app/app.h"
 #include <string.h>
+#include <stdio.h>
 
 inline
 static void uart_callback(uint32_t event) {
@@ -16,7 +18,9 @@ static void uart_callback(uint32_t event) {
 
 #ifdef COPY_VECTORS
 
-static VECTOR_TABLE_Type MyVectorTable[496] __attribute__((aligned (2048))) __attribute__((section (".bss.noinit.ram_vectors")));
+static VECTOR_TABLE_Type
+MyVectorTable[496] __attribute__((aligned (2048))) 
+__attribute__((section (".bss.noinit.ram_vectors")));
 
 static inline
 void copy_vtor_table_to_ram()
@@ -48,7 +52,7 @@ main (void) {
     fault_dump_enable(true);
 
     /// Initialize the SE services
-    // se_services_port_init();
+    se_services_port_init();
 
     app_setup();
     app_main_loop();
