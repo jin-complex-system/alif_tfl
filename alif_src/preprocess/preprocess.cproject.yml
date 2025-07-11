@@ -38,6 +38,7 @@ project:
     - group: models
       files:
         - file: ../models/model_orbw_19_Q_HE_vela.h
+        - file: ../models/model_orbw_19_Q_HE.h
     - group: dsp_preprocess
       files:
         # # supporting library for dsp_preprocess

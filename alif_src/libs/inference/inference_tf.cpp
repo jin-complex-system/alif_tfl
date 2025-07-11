@@ -16,7 +16,12 @@
 #include <stdio.h>
 
 #ifdef USE_TENSORFLOW
+
+#ifdef USE_NPU_MODEL
+#include <model_orbw_19_Q_HE.h>
+#else
 #include <model_orbw_19_Q_HE_vela.h>
+#endif // USE_NPU_MODEL
 
 static const
 tflite::Model*
@@ -55,7 +60,10 @@ add_operators(void) {
     s_microOpResolver.AddTranspose();
     s_microOpResolver.AddTransposeConv();
     s_microOpResolver.AddUnidirectionalSequenceLSTM();
+
+#ifdef USE_NPU_MODEL
     s_microOpResolver.AddEthosU();
+#endif // USE_NPU_MODEL
     s_microOpResolver.AddQuantize();
     s_microOpResolver.AddMaxPool2D();
     s_microOpResolver.AddReshape();
@@ -98,6 +106,13 @@ inference_tf_setup(void) {
     		s_interpreter->AllocateTensors();
 	printf("Allocated tensors interpreter, with status: %i\r\n", allocate_status);
     assert(allocate_status == kTfLiteOk);
+
+#ifdef USE_NPU_MODEL
+	printf("Using NPU\r\n");
+#else
+	printf("No NPU\r\n");	
+#endif // USE_NPU_MODEL
+
 
 #endif // USE_TENSORFLOW
 }
@@ -208,6 +223,6 @@ inference_tf_predict(void) {
 
 	// TODO: Investigate intrepreter result and why NPU does not run properly
 	
-	// assert(tflite_status == kTfLiteOk);
+	assert(tflite_status == kTfLiteOk);
 #endif // USE_TENSORFLOW
 }
