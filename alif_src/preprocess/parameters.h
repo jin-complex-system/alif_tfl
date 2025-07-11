@@ -18,7 +18,7 @@ typedef int32_t audio_data_type;
 #define N_MELS                              64
 
 #define NUM_SECONDS_DESIRED_AUDIO           7
-#define NUM_SECONDS_AUDIO                   1
+#define NUM_SECONDS_AUDIO                   NUM_SECONDS_DESIRED_AUDIO
 #define SAMPLING_RATE_PER_SECOND            44100
 
 #define TOP_DECIBEL                         80.0f

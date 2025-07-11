@@ -49,12 +49,9 @@ void
 preprocess_buffer_measure_individual(
     const uint16_t num_iterations) {
     #ifdef ADD_PREPROCESS_CODE
-	/// Compute mel spectrogram
-    #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
-    const uint16_t total_iterations = NUM_SECONDS_AUDIO * num_iterations;
-    #else
-    const uint16_t total_iterations = NUM_SECONDS_DESIRED_AUDIO * num_iterations / NUM_SECONDS_AUDIO;
-    #endif // NUM_SECONDS_AUDIO
+
+    // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
+    const uint16_t total_iterations = num_iterations;
 
     /// Measure compute_power_spectrum_audio_samples()
     {
@@ -130,14 +127,11 @@ static inline
 void
 preprocess_buffer(const uint16_t num_iterations) {
     #ifdef ADD_PREPROCESS_CODE
-	/// Compute mel spectrogram
-    #if NUM_SECONDS_AUDIO == NUM_SECONDS_DESIRED_AUDIO
-    const uint16_t total_iterations = NUM_SECONDS_AUDIO * num_iterations;
-    #else
-    const uint16_t total_iterations = NUM_SECONDS_DESIRED_AUDIO * num_iterations / NUM_SECONDS_AUDIO;
-    #endif // NUM_SECONDS_AUDIO
 
+    // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
+    const uint16_t total_iterations = num_iterations;
 
+    /// Compute mel spectrogram
     for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
         float max_mel = 1e-16f;
 
@@ -270,10 +264,10 @@ app_main_loop(void) {
                 current_state = APP_STATE_INFERENCE;
                 break;
             case APP_STATE_INFERENCE:
-                // inference_tf_set_input(
-                //     (inference_input_data_type*)mel_spectrogram_buffer,
-                //     MEL_SPECTROGRAM_BUFFER_LENGTH / 4
-                // );
+                inference_tf_set_input(
+                    (inference_input_data_type*)mel_spectrogram_buffer,
+                    MEL_SPECTROGRAM_BUFFER_LENGTH
+                );
                 inference_tf_predict();
 
                 current_state = APP_STATE_PROCESS_INFERENCE;
