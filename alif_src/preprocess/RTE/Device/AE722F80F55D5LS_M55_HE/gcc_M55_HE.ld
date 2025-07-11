@@ -165,12 +165,12 @@ SECTIONS
 
   .bss.at_sram0 (NOLOAD) : ALIGN(16)
   {
-    *(.bss.NoInit.activation_buf_sram)
     *(.bss.cache_arena)       . = ALIGN(16);
     *(.bss.audio_input_buffer)
     *(.bss.power_spectrum_buffer)
     *(.bss.mel_spectrogram_buffer)
     *(.bss.prediction_buffer)
+
     *(.bss.s_tensorArena)     . = ALIGN(16);
     *(.bss.s_microOpResolver) . = ALIGN(16);
 
@@ -200,8 +200,6 @@ SECTIONS
   {
     . = ALIGN(TGU_BLOCK_SIZE);
     __ns_region_0_start = .;
-    * (eth_buf)
-    * (usb_dma_buf)
     * (sd_dma_buf)
     . = ALIGN(TGU_BLOCK_SIZE);
     __ns_region_0_end = .;

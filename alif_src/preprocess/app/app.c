@@ -207,6 +207,7 @@ app_setup(void) {
     inference_tf_setup();
 
 #ifdef ADD_HARDWARE_CODE
+    printf("Setting up SD card\r\n");
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
     }
@@ -278,10 +279,10 @@ app_main_loop(void) {
                 current_state = APP_STATE_PROCESS_INFERENCE;
                 break;
             case APP_STATE_PROCESS_INFERENCE:
-                // inference_tf_get_output(
-                //     prediction_buffer,
-                //     PREDICTION_BUFFER_LENGTH
-                // );
+                inference_tf_get_output(
+                    prediction_buffer,
+                    PREDICTION_BUFFER_LENGTH
+                );
 
                 int16_t best_result = -125.0f;
                 uint16_t best_class_id = PREDICTION_BUFFER_LENGTH;

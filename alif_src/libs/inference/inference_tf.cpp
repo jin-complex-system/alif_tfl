@@ -139,7 +139,7 @@ inference_tf_set_input(
 	for (int dims_iterator = 0; dims_iterator < inputTensor->dims->size; dims_iterator++) {
 		tensor_size = tensor_size * inputTensor->dims->data[dims_iterator];
 	}
-	printf("Input size: %u", tensor_size);
+	printf("Input size: %u\r\n", tensor_size);
 	// assert(input_buffer_length == tensor_size);
 #endif // NDEBUG
 
@@ -188,7 +188,7 @@ inference_tf_get_output(
 	for (int dims_iterator = 0; dims_iterator < outputtTensor->dims->size; dims_iterator++) {
 		tensor_size = tensor_size * outputtTensor->dims->data[dims_iterator];
 	}
-	printf("Output size: %u", tensor_size);
+	printf("Output size: %u\r\n", tensor_size);
 	// assert(output_buffer_length == tensor_size);
 	
 #endif // NDEBUG
@@ -218,10 +218,11 @@ inference_tf_get_output(
 void
 inference_tf_predict(void) {
 #ifdef USE_TENSORFLOW
+
+	printf("Invoke interpreter\r\n");
 	const auto tflite_status =
 			s_interpreter->Invoke();
 	printf("Inference status: %u\r\n", tflite_status);
-
 	// TODO: Investigate intrepreter result and why NPU does not run properly
 	
 	assert(tflite_status == kTfLiteOk);
