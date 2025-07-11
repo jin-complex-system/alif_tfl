@@ -11,11 +11,11 @@
 #include <tensorflow/lite/c/common.h>
 #endif // USE_TENSORFLOW
 
-typedef int8_t inference_input_data_type;
+typedef uint8_t inference_input_data_type;
 typedef int8_t inference_output_data_type;
 
 #ifdef USE_TENSORFLOW
-#define EXPECTED_INPUT_DATA_TYPE    kTfLiteInt8
+#define EXPECTED_INPUT_DATA_TYPE    kTfLiteUInt8
 #define EXPECTED_OUTPUT_DATA_TYPE   kTfLiteInt8
 #define NUM_CLASSES                 19
 #endif // USE_TENSORFLOW

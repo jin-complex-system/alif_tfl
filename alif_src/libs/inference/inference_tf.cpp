@@ -201,7 +201,7 @@ inference_tf_get_output(
 		tensor_output = (inference_output_data_type *)outputtTensor->data.f;
 	}
 	else if constexpr(EXPECTED_OUTPUT_DATA_TYPE == kTfLiteInt8) {
-		tensor_output = (inference_input_data_type *)outputtTensor->data.int8;
+		tensor_output = (inference_output_data_type *)outputtTensor->data.int8;
 	}
 	assert(tensor_output != nullptr);
 
