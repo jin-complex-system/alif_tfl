@@ -18,9 +18,9 @@
 #ifdef USE_TENSORFLOW
 
 #ifdef USE_NPU_MODEL
-#include <model_orbw_19_Q_HE.h>
-#else
 #include <model_orbw_19_Q_HE_vela.h>
+#else
+#include <model_orbw_19_Q_HE.h>
 #endif // USE_NPU_MODEL
 
 static const
@@ -62,8 +62,9 @@ add_operators(void) {
     s_microOpResolver.AddUnidirectionalSequenceLSTM();
 
 #ifdef USE_NPU_MODEL
-    s_microOpResolver.AddEthosU();
+	s_microOpResolver.AddEthosU();
 #endif // USE_NPU_MODEL
+
     s_microOpResolver.AddQuantize();
     s_microOpResolver.AddMaxPool2D();
     s_microOpResolver.AddReshape();
@@ -86,6 +87,13 @@ add_operators(void) {
 void
 inference_tf_setup(void) {
 #ifdef USE_TENSORFLOW
+
+#ifdef USE_NPU_MODEL
+	printf("Using NPU\r\n");
+#else
+	printf("No NPU\r\n");	
+#endif // USE_NPU_MODEL
+
     s_model = tflite::GetModel(nn_model);
 	printf("model version: %u\r\n", s_model->version());
 	assert(s_model->version() == TFLITE_SCHEMA_VERSION);
@@ -106,13 +114,6 @@ inference_tf_setup(void) {
     		s_interpreter->AllocateTensors();
 	printf("Allocated tensors interpreter, with status: %i\r\n", allocate_status);
     assert(allocate_status == kTfLiteOk);
-
-#ifdef USE_NPU_MODEL
-	printf("Using NPU\r\n");
-#else
-	printf("No NPU\r\n");	
-#endif // USE_NPU_MODEL
-
 
 #endif // USE_TENSORFLOW
 }
