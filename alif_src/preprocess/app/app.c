@@ -207,6 +207,7 @@ app_setup(void) {
     inference_tf_setup();
 
 #ifdef ADD_HARDWARE_CODE
+    printf("Setting up SD card\r\n");
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
     }

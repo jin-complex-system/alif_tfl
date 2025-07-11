@@ -94,7 +94,7 @@ int arm_ethosu_npu_init(void) {
 
     /// Enable the IRQ
     NVIC_EnableIRQ(ETHOS_U_IRQN);
-    NVIC_SetPriority(ETHOS_U_IRQN, 0x60);
+    // NVIC_SetPriority(ETHOS_U_IRQN, 0x60);
 
     printf("Successfully set EthosU IRQ#: %u, Handler: 0x%p\r\n",
           ETHOS_U_IRQN, arm_ethosu_npu_irq_handler);

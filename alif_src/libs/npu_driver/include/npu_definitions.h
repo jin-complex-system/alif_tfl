@@ -5,9 +5,9 @@
 #include <M55_HE_map.h>
 
 #define ETHOS_U_BASE_ADDR                       LOCAL_NPU_BASE      // Ethos-U NPU base address
-#define ETHOS_U_IRQN                            LOCAL_NPU_IRQ_IRQn // Ethos-U NPU Interrupt
-#define ETHOS_U_SEC_ENABLED                     0               // Ethos-U NPU Security enable
-#define ETHOS_U_PRIV_ENABLED                    0               // Ethos-U NPU Privilege enable
+#define ETHOS_U_IRQN                            LOCAL_NPU_IRQ_IRQn  // Ethos-U NPU Interrupt
+#define ETHOS_U_SEC_ENABLED                     0                   // Ethos-U NPU Security enable
+#define ETHOS_U_PRIV_ENABLED                    0                   // Ethos-U NPU Privilege enable
 
 #define ETHOSU_TARGET_NPU_CONFIG                ethos-u55-128
 
