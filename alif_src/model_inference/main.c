@@ -13,7 +13,7 @@
 
 inline
 static void uart_callback(uint32_t event) {
-    // Deliverately left blank
+    // Deliberately left blank
 }
 
 #ifdef COPY_VECTORS
