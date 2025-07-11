@@ -70,9 +70,21 @@ SECTIONS
 
     *lv_*(.text .rodata*)
     *libg.a:*printf*(.text* .rodata*)
-    *libstdc++.a:cp-demangle.o(.text* .rodata*)
     *flatbuffer*.obj(.text .rodata*)
     *CMSIS*.obj(.text .rodata*)
+
+    *liblvgl.a:*(.text .rodata*)
+    *libArm-2D.a:*(.text* .rodata*)
+    *libcmsis_device.a:*(.text* .rodata*)
+    *libensemble_services.a:*(.text* .rodata*)
+    *liblcd_*.a:*(.text* .rodata*)
+    *libimage_*.a:*(.text* .rodata*)
+    *libcommon_api.a:*(.text* .rodata*)
+    *libalif_ui_api.a:*(.text* .rodata*)
+    *libg.a:*printf*(.text* .rodata*)
+    *libstdc++.a:cp-demangle.o(.text* .rodata*)
+    *libtensorflow-microlite.a:arm_*_s4.o(.text* .rodata*)
+    *libtensorflow-microlite.a:arm_*_s16.o(.text* .rodata*)
 
     *(startup_ro_data)
 
@@ -172,17 +184,17 @@ SECTIONS
   {
   } > ITCM
 
-  .bss (NOLOAD) : ALIGN(16)
+  .bss (NOLOAD) : ALIGN(8)
   {
     __bss_start__ = .;
     *(.bss)
     *(.bss.*)
     *(COMMON)
 
-    . = ALIGN(16);
+    . = ALIGN(8);
     __bss_end__ = .;
   } > SRAM0
-  /* } > DTCM */ /* Original */
+  # } > DTCM /* Original */
 
   .nonsecure0_region (NOLOAD) : ALIGN(16)
   {
@@ -208,11 +220,11 @@ SECTIONS
     __end__ = .;
     PROVIDE(end = .);
     . = . + __HEAP_SIZE;
-    . = ALIGN(16);
+    . = ALIGN(8);
     __HeapLimit = .;
   } > DTCM
 
-  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(16)
+  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(8)
   {
     __StackLimit = .;
     . = . + __STACK_SIZE;
@@ -261,6 +273,7 @@ SECTIONS
     *(SORT(.dtors.*))
     *(.dtors)
 
+    *(.text*)
     *(.rodata*)
     *(nn_model) . = ALIGN(16);
     *(labels)
