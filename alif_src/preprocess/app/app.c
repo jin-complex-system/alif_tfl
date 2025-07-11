@@ -256,11 +256,8 @@ app_main_loop(void) {
 
                 // preprocess_buffer(NUM_ITERATIONS);
                 preprocess_buffer_measure_individual(NUM_ITERATIONS);
-
                 printf("Done preprocessing %u iterations\r\n", NUM_ITERATIONS);
-
-                // TODO: Implement scaling for mel spectrogram
-
+                
                 current_state = APP_STATE_INFERENCE;
                 break;
             case APP_STATE_INFERENCE:
