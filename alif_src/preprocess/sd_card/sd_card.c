@@ -138,6 +138,8 @@ sd_card_setup(void) {
         printf("media open fail status = %d...\r\n",fr);
         return false;
     }
+
+    sd_card_initialise = true;
     return true;
 }
 

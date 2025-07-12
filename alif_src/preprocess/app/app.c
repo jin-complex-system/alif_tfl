@@ -1,8 +1,11 @@
 #include "app.h"
 
 #include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
 
 #include <sd_card.h>
+#include <ff.h>
 #include <led.h>
 #include <inference_tf.h>
 #include <npu_driver.h>
@@ -21,11 +24,6 @@
 
 static APP_STATE
 current_state = APP_STATE_INIT;
-
-/// SD card stuff
-#define INPUT_DIRECTORY INPUT
-#define OUTPUT_DIRECTORY OUTPUT
-#define OVERWRITE_FILE_IS_OKAY true
 
 #ifdef ADD_PREPROCESS_CODE
 /// Audio DSP
@@ -232,32 +230,106 @@ void
 app_main_loop(void) {
     printf("app_main_loop()\r\n");
 
-    current_state = APP_STATE_CHECK_BUTTON;
+    /// Constants
+    const char INPUT_DIRECTORY[] = "ALIF";
+
+    /// Variables
+    DIR read_directory;
+    bool read_sd_card = false;
+    bool success;
+    FILINFO current_file_info;
+
+    current_state = APP_STATE_INIT;
+    printf("Begin while(1)\r\n");
     while(true) {
 		switch(current_state) {
+            default:
+                // no-break
+            case APP_STATE_INIT:
+                read_sd_card = false;
+                current_state = APP_STATE_CHECK_BUTTON;
+                break;
             case APP_STATE_CHECK_BUTTON:
+                /// On button press, read SD card and get the input directory
                 // TODO: Implement button checking mechanism
+                if (!read_sd_card && true) {
+                    success = 
+                    sd_card_open_directory(
+                        INPUT_DIRECTORY,
+                        sizeof(INPUT_DIRECTORY),
+                        &read_directory);
+                    assert(success);
+                    read_sd_card = true;
+                }
+                else {
+                    read_sd_card = false;
+                }
 
-                current_state = APP_STATE_SET_DEFAULT_BUFFER;
+                if (read_sd_card) {
+                    current_state = APP_STATE_READ_SD_CARD;
+                }
+                /// Otherwise, just inference as it is
+                else {
+                    current_state = APP_STATE_SET_DEFAULT_BUFFER;
+                }
                 break;
             case APP_STATE_SET_DEFAULT_BUFFER:
                 memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
                 memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
-                current_state = APP_STATE_READ_SD_CARD;
+                current_state = APP_STATE_PREPROCESS;
                 break;
             case APP_STATE_READ_SD_CARD:
-                // TODO: Implement reading audio from SD card
+                assert(read_sd_card);
+                // TODO: Implement reading audio from SD car
+                
+                success = sd_card_get_next_file_information(
+					&read_directory,
+					&current_file_info);
+                //// Reached end of directory
+                if (!success) {
+                    read_sd_card = false;
+                    current_state = APP_STATE_SET_DEFAULT_BUFFER;
+                }
+                /// Successfully read file
+                else {
+                    /// Craft filepath to file
+                    /// Use mel spectrogram buffer as a temporary file
+                    char* filepath = (char*)(&mel_spectrogram_buffer[0]);
+                    sprintf(
+                        filepath,
+                        "%s/%s",
+                        INPUT_DIRECTORY,
+                        current_file_info.fname
+                    );
+                    printf(
+                        "Read input file: %s, with file size %lu\r\n",
+                        filepath,
+                        current_file_info.fsize
+                    );
 
-                current_state = APP_STATE_PREPROCESS;
+                    // Copy audio into buffer
+                    uint32_t length_read = sd_card_read_from_file(
+                            audio_input_buffer,
+                            sizeof(audio_input_buffer),
+                            filepath);
+                    printf("Length read: %u\r\n", length_read);
+                    printf("I read: %c\r\n", audio_input_buffer[0]);
+                    assert(length_read > 0);
+                    assert(length_read == sizeof(audio_input_buffer));
+
+                    current_state = APP_STATE_PREPROCESS;
+                }
+                assert(current_state != APP_STATE_READ_SD_CARD);
                 break;
             case APP_STATE_PREPROCESS:
                 #define NUM_ITERATIONS 20
+                printf("Begin preprocessing %u iterations\r\n");
 
                 // preprocess_buffer(NUM_ITERATIONS);
                 preprocess_buffer_measure_individual(NUM_ITERATIONS);
                 printf("Done preprocessing %u iterations\r\n", NUM_ITERATIONS);
-                
+
                 current_state = APP_STATE_INFERENCE;
                 break;
             case APP_STATE_INFERENCE:
@@ -291,9 +363,6 @@ app_main_loop(void) {
             case APP_STATE_SAVE_SD_CARD:
                 // TODO: Implement saving results to SD card
 
-                current_state = APP_STATE_CHECK_BUTTON;
-                break;
-            default:
                 current_state = APP_STATE_CHECK_BUTTON;
                 break;
         }
