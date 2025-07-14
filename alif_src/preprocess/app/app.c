@@ -85,14 +85,16 @@ preprocess_buffer_measure_individual(
             for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
                 const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
 
-                const float temp_max = compute_power_spectrum_into_mel_spectrogram(
+                const float temp_max = compute_power_spectrum_into_mel_spectrogram_raw(
                     &power_spectrum_buffer[0],
                     POWER_SPECTRUM_BUFFER_LENGTH,
-                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
                     N_FFT,
                     SAMPLING_RATE_PER_SECOND,
                     8000u,
-                    N_MELS
+                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
+                    N_MELS,
+                    (float*)audio_input_buffer,
+                    AUDIO_FRAME_LENGTH / (sizeof(float))
                 );
 
                 if (temp_max > max_mel) {
@@ -147,14 +149,16 @@ preprocess_buffer(const uint16_t num_iterations) {
                 HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
             );
 
-            const float temp_max = compute_power_spectrum_into_mel_spectrogram(
+            const float temp_max = compute_power_spectrum_into_mel_spectrogram_raw(
                 &power_spectrum_buffer[0],
                 POWER_SPECTRUM_BUFFER_LENGTH,
-                &mel_spectrogram_buffer[frame_iterator * N_MELS],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
                 8000u,
-                N_MELS
+                &mel_spectrogram_buffer[frame_iterator * N_MELS],
+                N_MELS,
+                (float*)audio_input_buffer,
+                AUDIO_FRAME_LENGTH / (sizeof(float))
             );
 
             if (temp_max > max_mel) {
@@ -232,6 +236,7 @@ app_main_loop(void) {
 
     /// Constants
     const char INPUT_DIRECTORY[] = "ALIF";
+    const char OUTPUT_DIRECTORY[] = "output_A";
 
     /// Variables
     DIR read_directory;
@@ -286,6 +291,7 @@ app_main_loop(void) {
                 success = sd_card_get_next_file_information(
 					&read_directory,
 					&current_file_info);
+
                 //// Reached end of directory
                 if (!success) {
                     read_sd_card = false;
@@ -316,7 +322,7 @@ app_main_loop(void) {
                     printf("Length read: %u\r\n", length_read);
                     printf("I read: %c\r\n", audio_input_buffer[0]);
                     assert(length_read > 0);
-                    assert(length_read == sizeof(audio_input_buffer));
+                    // assert(length_read == sizeof(audio_input_buffer));
 
                     current_state = APP_STATE_PREPROCESS;
                 }
@@ -324,7 +330,7 @@ app_main_loop(void) {
                 break;
             case APP_STATE_PREPROCESS:
                 #define NUM_ITERATIONS 20
-                printf("Begin preprocessing %u iterations\r\n");
+                printf("Begin preprocessing %u iterations\r\n", NUM_ITERATIONS);
 
                 // preprocess_buffer(NUM_ITERATIONS);
                 preprocess_buffer_measure_individual(NUM_ITERATIONS);
@@ -361,7 +367,18 @@ app_main_loop(void) {
                 current_state = APP_STATE_SAVE_SD_CARD;
                 break;
             case APP_STATE_SAVE_SD_CARD:
-                // TODO: Implement saving results to SD card
+                success =
+                sd_card_write_to_file(
+                    current_file_info.fname,
+                    strlen(current_file_info.fname),
+                    OUTPUT_DIRECTORY,
+                    sizeof(OUTPUT_DIRECTORY),
+                    prediction_buffer,
+                    sizeof(prediction_buffer),
+                    true
+                );
+                printf("Saved to output\r\n");
+                assert(success);
 
                 current_state = APP_STATE_CHECK_BUTTON;
                 break;
