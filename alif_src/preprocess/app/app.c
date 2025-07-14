@@ -367,18 +367,20 @@ app_main_loop(void) {
                 current_state = APP_STATE_SAVE_SD_CARD;
                 break;
             case APP_STATE_SAVE_SD_CARD:
-                success =
-                sd_card_write_to_file(
-                    current_file_info.fname,
-                    strlen(current_file_info.fname),
-                    OUTPUT_DIRECTORY,
-                    sizeof(OUTPUT_DIRECTORY),
-                    prediction_buffer,
-                    sizeof(prediction_buffer),
-                    true
-                );
-                printf("Saved to output\r\n");
-                assert(success);
+                if (read_sd_card) {
+                    success =
+                    sd_card_write_to_file(
+                        current_file_info.fname,
+                        strlen(current_file_info.fname),
+                        OUTPUT_DIRECTORY,
+                        sizeof(OUTPUT_DIRECTORY),
+                        prediction_buffer,
+                        sizeof(prediction_buffer),
+                        true
+                    );
+                    printf("Saved prediction to SD card output directory\r\n");
+                    assert(success);
+                }
 
                 current_state = APP_STATE_CHECK_BUTTON;
                 break;
