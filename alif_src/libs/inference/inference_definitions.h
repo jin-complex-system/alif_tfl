@@ -5,7 +5,7 @@
 
 #define USE_TENSORFLOW              1
 
-// #define USE_NPU_MODEL               1
+#define USE_NPU_MODEL               1
 
 #ifdef USE_TENSORFLOW
 #include <tensorflow/lite/c/common.h>

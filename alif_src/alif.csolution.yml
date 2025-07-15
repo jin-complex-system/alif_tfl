@@ -30,11 +30,29 @@ solution:
       define:
         - "CORE_M55_HE"
         - ETHOSU55
+        - NPU_QCONFIG: 1
+        - NPU_REGIONCFG_0: 1
+        - NPU_REGIONCFG_1: 0
+        - NPU_REGIONCFG_2: 1
+        - AXI_LIMIT0_MEM_TYPE: 3
+        - AXI_LIMIT1_MEM_TYPE: 3
+        - AXI_LIMIT2_MEM_TYPE: 3
+        - AXI_LIMIT3_MEM_TYPE: 3
+        - USART_DRV_NUM: 4
     - type: HP
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
       define:
         - "CORE_M55_HP"
         - ETHOSU55
+        - NPU_QCONFIG: 1
+        - NPU_REGIONCFG_0: 1
+        - NPU_REGIONCFG_1: 0
+        - NPU_REGIONCFG_2: 1
+        - AXI_LIMIT0_MEM_TYPE: 3
+        - AXI_LIMIT1_MEM_TYPE: 3
+        - AXI_LIMIT2_MEM_TYPE: 3
+        - AXI_LIMIT3_MEM_TYPE: 3
+        - USART_DRV_NUM: 4
 
   build-types:
     - type: debug
