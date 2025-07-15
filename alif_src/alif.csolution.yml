@@ -28,8 +28,11 @@ solution:
     - type: HE
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HE
       define:
-        - "CORE_M55_HE"
-        - ETHOSU55
+        - "CORE_M55_HE" # Select HP core
+        - ETHOSU55      # Select Ethos U55
+
+        # NPU configuration for MRAM
+        # See https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/mlek.csolution.yml
         - NPU_QCONFIG: 1
         - NPU_REGIONCFG_0: 1
         - NPU_REGIONCFG_1: 0
@@ -42,8 +45,11 @@ solution:
     - type: HP
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
       define:
-        - "CORE_M55_HP"
-        - ETHOSU55
+        - "CORE_M55_HP" # Select HP core
+        - ETHOSU55      # Select Ethos U55
+
+        # NPU configuration for MRAM
+        # See https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/mlek.csolution.yml
         - NPU_QCONFIG: 1
         - NPU_REGIONCFG_0: 1
         - NPU_REGIONCFG_1: 0
@@ -65,7 +71,6 @@ solution:
       debug: off
 
   define:
-    # Place CMake options here?
     - UNICODE
     - _UNICODE
     - Ofast
@@ -74,6 +79,8 @@ solution:
     - project: blinky/blinky.cproject.yml
     - project: hello/hello.cproject.yml
     - project: hello_rtt/hello_rtt.cproject.yml
-    - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
+
+    # New projects
     - project: preprocess/preprocess.cproject.yml
+    - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
     - project: model_inference/model_inference.cproject.yml

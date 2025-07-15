@@ -37,37 +37,56 @@ solution:
 
   # Select used compiler
   compiler: GCC
-  misc:
-    - C:
-        - -std=c99
-        - -fdata-sections
-        - -flax-vector-conversions
-        - -fno-exceptions
-        - -fno-rtti
 
   packs:
     - pack: AlifSemiconductor::Ensemble
-    - pack: ARM::CMSIS
-    - pack: ARM::CMSIS-DSP
-    - pack: ARM::CMSIS-NN # Unsure which version
+    - pack: ARM::CMSIS@6.0.0
+    - pack: ARM::CMSIS-DSP@1.16.0
+    - pack: ARM::CMSIS-NN@6.0.0
     - pack: ARM::ethos-u-core-driver@1.24.11
 
     # TensorFlow Lite Micro
-    - pack: tensorflow::flatbuffers@1.24.11
-    - pack: tensorflow::gemmlowp@1.24.11
-    - pack: tensorflow::kissfft@1.24.11
-    - pack: tensorflow::ruy@1.24.11
-    - pack: tensorflow::tensorflow-lite-micro@1.24.11
+    - pack: tensorflow::flatbuffers
+    - pack: tensorflow::gemmlowp
+    - pack: tensorflow::kissfft
+    - pack: tensorflow::ruy
+    - pack: tensorflow::tensorflow-lite-micro@1.24.8
 
   target-types:
     - type: HE
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HE
       define:
-        - "CORE_M55_HE"
+        - "CORE_M55_HE" # Select HP core
+        - ETHOSU55      # Select Ethos U55
+
+        # NPU configuration for MRAM
+        # See https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/mlek.csolution.yml
+        - NPU_QCONFIG: 1
+        - NPU_REGIONCFG_0: 1
+        - NPU_REGIONCFG_1: 0
+        - NPU_REGIONCFG_2: 1
+        - AXI_LIMIT0_MEM_TYPE: 3
+        - AXI_LIMIT1_MEM_TYPE: 3
+        - AXI_LIMIT2_MEM_TYPE: 3
+        - AXI_LIMIT3_MEM_TYPE: 3
+        - USART_DRV_NUM: 4
     - type: HP
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
       define:
-        - "CORE_M55_HP"
+        - "CORE_M55_HP" # Select HP core
+        - ETHOSU55      # Select Ethos U55
+
+        # NPU configuration for MRAM
+        # See https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/mlek.csolution.yml
+        - NPU_QCONFIG: 1
+        - NPU_REGIONCFG_0: 1
+        - NPU_REGIONCFG_1: 0
+        - NPU_REGIONCFG_2: 1
+        - AXI_LIMIT0_MEM_TYPE: 3
+        - AXI_LIMIT1_MEM_TYPE: 3
+        - AXI_LIMIT2_MEM_TYPE: 3
+        - AXI_LIMIT3_MEM_TYPE: 3
+        - USART_DRV_NUM: 4
 
   build-types:
     - type: debug
@@ -80,11 +99,8 @@ solution:
       debug: off
 
   define:
-    # Place CMake options here?
     - UNICODE
     - _UNICODE
-    - ETHOSU55
-    - DISABLEFLOAT16
     - Ofast
 
   projects:
@@ -93,9 +109,10 @@ solution:
     - project: hello_rtt/hello_rtt.cproject.yml
     - project: test_dsp_preprocessing/test_dsp_preprocessing.cproject.yml
     - project: preprocess/preprocess.cproject.yml
+    - project: model_inference/model_inference.cproject.yml
 
 ```
-- Note that versions of different CMSIS-Packs may need to be changed in the future
+- Note that the settings in `.csolution.yml` are global
 
 4. Locate the CMSIS packs. In Windows, it is located in `C:\Users\$USER\AppData\Local\Arm\Packs\AlifSemiconductor\Ensemble\1.3.0`, where the current version is `1.3.0`
 
@@ -119,13 +136,9 @@ project:
         - file: main.c
         - file: app/app.h
         - file: app/app.c
-        - file: led/led.h
-        - file: led/led.c
         - file: sd_card/sd_card.h
         - file: sd_card/sd_card.c
-        - file: inference/inference_definitions.h
-        - file: inference/inference_tf.h
-        - file: inference/inference_tf.cpp
+
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -133,6 +146,15 @@ project:
         - file: ../libs/common_app_utils/logging/uart_tracelib.c
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+    - group: inference
+      files:
+        - file: ../libs/inference/inference_definitions.h
+        - file: ../libs/inference/inference_tf.h
+        - file: ../libs/inference/inference_tf.cpp
+    - group: led
+      files:
+        - file: ../libs/led/led.h
+        - file: ../libs/led/led.c
     - group: FatFS
       files:
         - file: ../libs/FatFS/diskio.h
@@ -145,6 +167,7 @@ project:
     - group: models
       files:
         - file: ../models/model_orbw_19_Q_HE_vela.h
+        - file: ../models/model_orbw_19_Q_HE.h
     - group: dsp_preprocess
       files:
         # # supporting library for dsp_preprocess
@@ -272,6 +295,12 @@ project:
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_0.h
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_8000.h
 
+    - group: npu_driver
+      files:
+        - file: ../libs/npu_driver/include/npu_driver.h
+        - file: ../libs/npu_driver/include/npu_definitions.h
+        - file: ../libs/npu_driver/src/npu_driver.c
+
   output:
     base-name: $Project$
     type:
@@ -284,6 +313,12 @@ project:
     - ../libs/FatFS/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
+
+    # inference
+    - ../libs/inference
+
+    # LED
+    - ../libs/led
 
     # Models
     - ../models
@@ -308,6 +343,9 @@ project:
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_weights
+
+    # NPU driver
+    - ../libs/npu_driver/include/
 
   components:
     # needed for Alif Ensemble support
@@ -387,13 +425,19 @@ project:
 8. Copy the memory configuration from [`alif-e7-m55-he.ld`](https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/kws/linker/alif-e7-m55-he.ld) to [`preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld`](alif_tfl/preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld)
 - Add and remove buffers as needed in `.bss.at_sram0`
 
-9. See [Known Issues](#known-issues) for any issues during building process
+9. Add/modify the following local drivers and modules:
+- [inference](/libs/inference/)
+- [led](/libs/led/)
+- [npu_driver](/libs/npu_driver/)
+
+10. Modify the [`npu_definitions.h`](/libs/npu_driver/include/npu_definitions.h) to adjust the NPU configuration if needed
+
+11. See [Known Issues](#known-issues) for any issues during building process
 
 ## Known Issues
 
 1. [float16 support failure in CMSIS-DSP](github.com/ARM-software/CMSIS-DSP/issues/242) with [float16_issue.md](float16_issue.md)
-2. Pass C flag `-flax-vector-conversions`
-3. Address [TFL Micro issues](tfl_micro_issues.md)
+2. Address [TFL Micro issues](tfl_micro_issues.md)
 
 
 # References
