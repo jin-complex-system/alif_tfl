@@ -30,11 +30,6 @@ setup_led(void) {
     gpio_g->SetValue(BOARD_LEDRGB0_G_PIN_NO, GPIO_PIN_OUTPUT_STATE_LOW);
 }
 
-/**
- * Turn on the LED
- * 
- * @param target_led
- */
 void
 turn_on_led(
     const LED_TYPE target_led) {
@@ -51,11 +46,6 @@ turn_on_led(
     }
 }
 
-/**
- * Turn off the LED
- * 
- * @param target_led
- */
 void
 turn_off_led(
     const LED_TYPE target_led) {
@@ -72,11 +62,6 @@ turn_off_led(
     }
 }
 
-/**
- * Toggle LED
- * 
- * @param target_led
- */
 void
 toggle_led(
     const LED_TYPE target_led) {

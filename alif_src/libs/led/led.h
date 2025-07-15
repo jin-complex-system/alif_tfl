@@ -16,7 +16,7 @@ setup_led(void);
 /**
  * Turn on the LED
  * 
- * @param target_led
+ * @param target_led, according to LED_TYPE enum
  */
 void
 turn_on_led(
@@ -25,7 +25,7 @@ turn_on_led(
 /**
  * Turn off the LED
  * 
- * @param target_led
+ * @param target_led, according to LED_TYPE enum
  */
 void
 turn_off_led(
@@ -34,7 +34,7 @@ turn_off_led(
 /**
  * Toggle LED
  * 
- * @param target_led
+ * @param target_led, according to LED_TYPE enum
  */
 void
 toggle_led(
