@@ -12,9 +12,6 @@
 
 #include <parameters.h>
 
-#define ADD_HARDWARE_CODE 1
-#define ADD_PREPROCESS_CODE 1
-
 /// Audio DSP
 #include <hann_window_scale_2048.h>
 #include <audio_dsp_fft.h>
@@ -25,7 +22,6 @@
 static APP_STATE
 current_state = APP_STATE_INIT;
 
-#ifdef ADD_PREPROCESS_CODE
 /// Audio DSP
 #define INPUT_BUFFER_LENGTH AUDIO_BUFFER_MINIMUM_LENGTH
 audio_data_type
@@ -36,7 +32,6 @@ power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)))
 
 float
 mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));;
-#endif // ADD_PREPROCESS_CODE
 
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
 inference_output_data_type
@@ -46,7 +41,6 @@ static inline
 void
 preprocess_buffer_measure_individual(
     const uint16_t num_iterations) {
-    #ifdef ADD_PREPROCESS_CODE
 
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
@@ -119,14 +113,11 @@ preprocess_buffer_measure_individual(
         }
         turn_off_led(LED_RED);
     }
-    #endif // ADD_PREPROCESS_CODE
 }
 
 static inline
 void
 preprocess_buffer(const uint16_t num_iterations) {
-    #ifdef ADD_PREPROCESS_CODE
-
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
 
@@ -173,7 +164,6 @@ preprocess_buffer(const uint16_t num_iterations) {
     }
 
     toggle_led(LED_GREEN);
-    #endif // ADD_PREPROCESS_CODE
 }
 
 void
@@ -194,13 +184,9 @@ app_setup(void) {
     printf("ARM NPU not supported!\r\n");
 #endif // ARM_NPU
 
-#ifdef ADD_HARDWARE_CODE
     setup_led();
-#endif // ADD_HARDWARE_CODE
-
     inference_tf_setup();
 
-#ifdef ADD_HARDWARE_CODE
     printf("Setting up SD card\r\n");
     if (!sd_card_setup()) {
         printf("Failed to setup SD card\r\n");
@@ -208,9 +194,7 @@ app_setup(void) {
     else {
         printf("Sucessfully setup SD card\r\n");
     }
-#endif // ADD_HARDWARE_CODE
-    
-#ifdef ADD_PREPROCESS_CODE
+
     initialise_power_spectrum(N_FFT);
 
     printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
@@ -219,11 +203,8 @@ app_setup(void) {
 #else
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
-#endif // ADD_PREPROCESS_CODE
 
-#ifdef ADD_HARDWARE_CODE
     turn_on_led(LED_RED);
-#endif // ADD_HARDWARE_CODE
 
     current_state = APP_STATE_INIT;
 }
@@ -232,9 +213,14 @@ void
 app_main_loop(void) {
     printf("app_main_loop()\r\n");
 
+#ifdef LOAD_AUDIO_AND_PREPROCESS
     /// Constants
-    const char INPUT_DIRECTORY[] = "ALIF";
-    const char OUTPUT_DIRECTORY[] = "outA";
+    const char INPUT_DIRECTORY[] = "Alif_Audio";
+    const char OUTPUT_DIRECTORY[] = "out_A";
+#else
+    const char INPUT_DIRECTORY[] = "Alif_Pre";
+    const char OUTPUT_DIRECTORY[] = "out_P";
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
     /// Variables
     DIR read_directory;
@@ -299,8 +285,8 @@ app_main_loop(void) {
                     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
 
                     /// Craft filepath to file
-                    /// Use mel spectrogram buffer as a temporary file
-                    char* filepath = (char*)(&mel_spectrogram_buffer[0]);
+                    /// Use power spectrum buffer as a temporary file
+                    char* filepath = (char*)(&power_spectrum_buffer[0]);
                     sprintf(
                         filepath,
                         "%s/%s",
@@ -313,17 +299,27 @@ app_main_loop(void) {
                         current_file_info.fsize
                     );
 
+                    #ifdef LOAD_AUDIO_AND_PREPROCESS
+
                     // Copy audio into buffer
                     uint32_t length_read = sd_card_read_from_file(
                             audio_input_buffer,
                             sizeof(audio_input_buffer),
                             filepath);
+                    current_state = APP_STATE_PREPROCESS;
+                    #else
+                    uint32_t length_read = sd_card_read_from_file(
+                            (uint8_t*)mel_spectrogram_buffer,
+                            sizeof(mel_spectrogram_buffer),
+                            filepath);
+                    current_state = APP_STATE_INFERENCE;
+                    #endif // LOAD_AUDIO_AND_PREPROCESS
+
+
                     printf("Length read: %u\r\n", length_read);
                     // printf("I read: %c\r\n", audio_input_buffer[0]);
                     assert(length_read > 0);
                     // assert(length_read == sizeof(audio_input_buffer));
-
-                    current_state = APP_STATE_PREPROCESS;
                 }
                 assert(current_state != APP_STATE_READ_SD_CARD);
                 break;
