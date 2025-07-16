@@ -223,8 +223,6 @@ inference_tf_predict(void) {
 	const auto tflite_status =
 			s_interpreter->Invoke();
 	printf("Inference status: %u\r\n", tflite_status);
-	// TODO: Investigate intrepreter result and why NPU does not run properly
-	
 	assert(tflite_status == kTfLiteOk);
 #endif // USE_TENSORFLOW
 }
