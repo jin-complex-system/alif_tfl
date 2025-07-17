@@ -3,26 +3,55 @@ import glob
 
 TFRECORD_EXT = 'tfrecord'
 
-def parse_file(filepath):
+def parse_file(
+        filepath):
+    """ Parse file to create y_pred and y_test
+
+    Arg:
+        filepath - 
+
+    return: 
+        class_id - 
+        prediction - 
+    """
+    assert(len(filepath) > 1)
+
     # Grab the class_id from filename
     basename = os.path.basename(filepath)
     class_id = int(basename.split('-')[1].strip())
 
-    prediction = -256
+    predicted_class = 0
     # Find the highest prediction from file
     with open(
         filepath,
         mode='rb',
         encoding=None) as fh:
         for line in fh:
-
+            print(line)
             best_prediction = -256
+
+            iterator = 0
             for byte_element in line:
                 if (int(byte_element) > best_prediction):
-                    prediction = int(byte_element)
-    return class_id, prediction
+                    best_prediction = int(byte_element)
+                    predicted_class = iterator
+                iterator = iterator + 1
+
+    return class_id, predicted_class
         
-def parse_files(target_directory):
+def parse_files(
+        target_directory):
+    """ Parse files to create y_pred and y_test
+
+    Arg:
+        filepath - 
+
+    return: 
+        y_pred - 
+        y_test - 
+    """
+    assert(len(target_directory) > 1)
+
     y_pred = []
     y_test = []
 
@@ -34,11 +63,24 @@ def parse_files(target_directory):
 
     return y_pred, y_test
 
-def _main(
-        target_directory,
-        output_directory,
-        num_classes):
-    y_pred, y_test = parse_files(target_directory=target_directory)
+def create_confusion_matrix(
+    y_pred,
+    y_test,
+    num_classes,
+    output_directory,
+    filename="confusion_matrix"
+):
+    """ Create confusin matrix figures from lists
+
+    Arg:
+        y_pred - 
+        y_test - 
+        num_classes - 
+        output_directory - 
+        filename - 
+    """
+    # Check parameters
+    assert(len(y_pred) == len(y_test))
 
     # Import packages
     import tensorflow as tf
@@ -48,8 +90,8 @@ def _main(
     # Constants
     CONFUSION_MATRIX_FIGURE_DPI=600
     TITLE="Confusion Matrix"
-    FIGURE_FILENAME_WITH_ANNOTATION = "confusion_matrix_annot.png"
-    FIGURE_FILENAME_NO_ANNOTATION = "confusion_matrix_no_annot.png"
+    FIGURE_FILENAME_WITH_ANNOTATION = "{}_annot.png".format(filename)
+    FIGURE_FILENAME_NO_ANNOTATION = "{}_no_annot.png".format(filename)
 
     cm = tf.math.confusion_matrix(
         y_test,
@@ -85,6 +127,25 @@ def _main(
     # plt.show()
     plt.savefig(os.path.join(output_directory, FIGURE_FILENAME_NO_ANNOTATION))
     plt.close()
+
+
+def _main(
+        target_directory,
+        output_directory,
+        num_classes):
+
+    # Make necessary directories
+    os.makedirs(output_directory, exist_ok=True)
+
+    y_pred, y_test = parse_files(target_directory=target_directory)
+
+    create_confusion_matrix(
+        y_pred=y_pred,
+        y_test=y_test,
+        num_classes=num_classes,
+        output_directory=output_directory,
+        filename="confusion_matrix",
+    )
 
 if __name__ == '__main__':
     target_directory = "out_P"

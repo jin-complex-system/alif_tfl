@@ -1,0 +1,5 @@
+numpy
+seaborn
+pillow
+matplotlib
+tensorflow
