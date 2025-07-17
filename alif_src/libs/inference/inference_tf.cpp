@@ -157,7 +157,7 @@ inference_tf_set_input(
 
 	/// Load input
     {
-        for (uint32_t tensor_iterator = 0; tensor_iterator < input_buffer_length; tensor_iterator++) {
+        for (uint32_t tensor_iterator = 0; tensor_iterator < tensor_size; tensor_iterator++) {
         	tensor_input[tensor_iterator] =
         			input_buffer[tensor_iterator];
         }
