@@ -202,6 +202,13 @@ app_setup(void) {
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
 
+
+    /// Clear all the buffers
+    memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
+    memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
+    memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+    memset(prediction_buffer, 0, sizeof(prediction_buffer));
+
     turn_on_led(LED_RED);
 
     current_state = APP_STATE_INIT;
