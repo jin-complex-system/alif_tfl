@@ -27,3 +27,9 @@ git submodule update --init --recursive
 ## Project Recreation
 
 To re-create the project from scratch, see [`recreate_new_project_from_blinky.md`](docs/recreate_new_project_from_blinky.md)
+
+# TODO
+
+1. Investigate why preprocessing and inference yields the same results
+    - Unlikely ARM-specific implementation is the root cause
+2. Implement microphones on Alif Ensemble Dev Kit 2 into workflow
