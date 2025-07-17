@@ -25,13 +25,13 @@ current_state = APP_STATE_INIT;
 /// Audio DSP
 #define INPUT_BUFFER_LENGTH AUDIO_BUFFER_MINIMUM_LENGTH
 audio_data_type
-audio_input_buffer[INPUT_BUFFER_LENGTH];
+audio_input_buffer[INPUT_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 float
-power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)));;
+power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 float
-mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));;
+mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
 inference_output_data_type
@@ -79,16 +79,14 @@ preprocess_buffer_measure_individual(
             for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
                 const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
 
-                const float temp_max = compute_power_spectrum_into_mel_spectrogram_raw(
+                const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                     &power_spectrum_buffer[0],
                     POWER_SPECTRUM_BUFFER_LENGTH,
+                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
                     N_FFT,
                     SAMPLING_RATE_PER_SECOND,
                     8000u,
-                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
-                    N_MELS,
-                    (float*)audio_input_buffer,
-                    AUDIO_FRAME_LENGTH / (sizeof(float))
+                    N_MELS
                 );
 
                 if (temp_max > max_mel) {
@@ -121,6 +119,8 @@ preprocess_buffer(const uint16_t num_iterations) {
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
 
+    toggle_led(LED_GREEN);
+
     /// Compute mel spectrogram
     for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
         float max_mel = 1e-16f;
@@ -131,7 +131,7 @@ preprocess_buffer(const uint16_t num_iterations) {
             compute_power_spectrum_audio_samples(
                 &audio_input_buffer[audio_iterator],
                 AUDIO_FRAME_LENGTH,
-                power_spectrum_buffer,
+                &power_spectrum_buffer[0],
                 POWER_SPECTRUM_BUFFER_LENGTH,
                 NULL,
                 0u,
@@ -139,16 +139,14 @@ preprocess_buffer(const uint16_t num_iterations) {
                 HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
             );
 
-            const float temp_max = compute_power_spectrum_into_mel_spectrogram_raw(
+            const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                 &power_spectrum_buffer[0],
                 POWER_SPECTRUM_BUFFER_LENGTH,
+                &mel_spectrogram_buffer[frame_iterator * N_MELS],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
                 8000u,
-                &mel_spectrogram_buffer[frame_iterator * N_MELS],
-                N_MELS,
-                (float*)audio_input_buffer,
-                AUDIO_FRAME_LENGTH / (sizeof(float))
+                N_MELS
             );
 
             if (temp_max > max_mel) {
