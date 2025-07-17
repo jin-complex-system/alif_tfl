@@ -27,7 +27,6 @@ def parse_file(
         mode='rb',
         encoding=None) as fh:
         for line in fh:
-            print(line)
             best_prediction = -256
 
             iterator = 0
