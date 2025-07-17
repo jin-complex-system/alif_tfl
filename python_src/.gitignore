@@ -1,0 +1,10 @@
+# Edge output directories and files
+out_P
+out_A
+_my_results
+*.tfrecord
+*.P
+*.png
+
+# Python 
+venv/*
