@@ -4,11 +4,13 @@ import glob
 EDGE_FILE_EXT = 'edge'
 
 def parse_file(
-        filepath):
+        filepath,
+        signed=True):
     """ Parse file to create y_pred and y_test
 
     Arg:
         filepath - 
+        signed - Individual bytes are signed or not
 
     return: 
         class_id - 
@@ -26,24 +28,32 @@ def parse_file(
         filepath,
         mode='rb',
         encoding=None) as fh:
-        for line in fh:
-            best_prediction = -256
 
-            iterator = 0
-            for byte_element in line:
-                if (int(byte_element) > best_prediction):
-                    best_prediction = int(byte_element)
-                    predicted_class = iterator
-                iterator = iterator + 1
+        line = fh.read()
+        best_prediction = -256
+
+        for iterator in range(0, len(line)):
+            byte_element = line[iterator]
+
+            # Note that byte_element is rendered as unsigned integer by default
+            # We need to change back to signed if relevant
+            if signed:
+                byte_element = int.from_bytes(bytes([line[iterator]]), byteorder='little', signed=True)
+            
+            if byte_element > best_prediction:
+                best_prediction = byte_element
+                predicted_class = iterator
 
     return class_id, predicted_class
         
 def parse_files(
-        target_directory):
+        target_directory,
+        signed=True):
     """ Parse files to create y_pred and y_test
 
     Arg:
         filepath - 
+        signed - Individual bytes are signed or not
 
     return: 
         y_pred - 
@@ -145,6 +155,7 @@ def _main(
         output_directory=output_directory,
         filename="confusion_matrix",
     )
+    print("Done")
 
 if __name__ == '__main__':
     target_directory = "out_P"
