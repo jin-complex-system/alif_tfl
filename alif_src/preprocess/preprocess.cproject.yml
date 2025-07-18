@@ -7,9 +7,6 @@ project:
         - file: main.c
         - file: app/app.h
         - file: app/app.c
-        - file: sd_card/sd_card.h
-        - file: sd_card/sd_card.c
-
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -22,6 +19,11 @@ project:
         - file: ../libs/inference/inference_definitions.h
         - file: ../libs/inference/inference_tf.h
         - file: ../libs/inference/inference_tf.cpp
+    - group: npu_driver
+      files:
+        - file: ../libs/npu_driver/include/npu_driver.h
+        - file: ../libs/npu_driver/include/npu_definitions.h
+        - file: ../libs/npu_driver/src/npu_driver.c
     - group: led
       files:
         - file: ../libs/led/led.h
@@ -35,10 +37,15 @@ project:
         - file: ../libs/FatFS/ffconf.h
         - file: ../libs/FatFS/ffsystem.c
         - file: ../libs/FatFS/ffunicode.c
+    - group: sd_card
+      files:
+        - file: ../libs/sd_card/sd_card.h
+        - file: ../libs/sd_card/sd_card.c
     - group: models
       files:
         - file: ../models/model_orbw_19_Q_HE_vela.h
         - file: ../models/model_orbw_19_Q_HE.h
+        
     - group: dsp_preprocess
       files:
         # # supporting library for dsp_preprocess
@@ -166,12 +173,6 @@ project:
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_0.h
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_8000.h
 
-    - group: npu_driver
-      files:
-        - file: ../libs/npu_driver/include/npu_driver.h
-        - file: ../libs/npu_driver/include/npu_definitions.h
-        - file: ../libs/npu_driver/src/npu_driver.c
-
   output:
     base-name: $Project$
     type:
@@ -188,8 +189,14 @@ project:
     # inference
     - ../libs/inference
 
+    # NPU driver
+    - ../libs/npu_driver/include/
+
     # LED
     - ../libs/led
+
+    # SD card
+    - ../libs/sd_card
 
     # Models
     - ../models
@@ -214,9 +221,6 @@ project:
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin
     - ../libs/audio_dsp/include/precomputed_mel/mel_weights
-
-    # NPU driver
-    - ../libs/npu_driver/include/
 
   components:
     # needed for Alif Ensemble support
