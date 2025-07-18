@@ -85,10 +85,8 @@ sd_card_read_from_file(
 /**
  * Write to SD card as file. Directory needs to be open prior to calling this function
  *
- * @param filename_str string containing the directory filename
- * @param filename_str_length non-zero length of filename_str
- * @param directory_str string containing the directory
- * @param directory_string_length non-zero length of string
+ * @param filepath_str string containing the filepath
+ * @param filepath_str_length non-zero length of filepath_str
  * @param data_buffer buffer containing the data to be written into
  * @param data_buffer_length length of the data buffer
  * @param overwrite if true, ignore if the file exist
@@ -97,10 +95,8 @@ sd_card_read_from_file(
  */
 bool
 sd_card_write_to_file(
-		const char* filename_str,
-		const uint16_t filename_str_length,
-		const char* directory_str,
-		const uint16_t directory_str_length,
+		const char* filepath_str,
+		const uint16_t filepath_str_length,
 		const void* data_buffer,
 		const uint16_t data_buffer_length,
 		const bool overwrite);

@@ -375,7 +375,14 @@ app_main_loop(void) {
             case APP_STATE_SAVE_SD_CARD:
                 printf("APP_STATE_SAVE_SD_CARD\r\n");
                 if (read_sd_card) {
-                    printf("Open %s\r\n", current_file_info.fname);
+                    char* output_filepath = (char*)(&power_spectrum_buffer[0]);
+                    sprintf(
+                        output_filepath,
+                        "%s/%s",
+                        OUTPUT_DIRECTORY,
+                        current_file_info.fname
+                    );
+                    printf("Open output file: %s\r\n", output_filepath);
 
                     // DIR write_directory;
 
@@ -388,10 +395,8 @@ app_main_loop(void) {
 
                     success =
                     sd_card_write_to_file(
-                        current_file_info.fname,
-                        strlen(current_file_info.fname),
-                        OUTPUT_DIRECTORY,
-                        sizeof(OUTPUT_DIRECTORY),
+                        output_filepath,
+                        strlen(output_filepath),
                         prediction_buffer,
                         sizeof(prediction_buffer),
                         true

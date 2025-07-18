@@ -279,10 +279,8 @@ sd_card_read_from_file(
 
 bool
 sd_card_write_to_file(
-		const char* filename_str,
-		const uint16_t filename_str_length,
-		const char* directory_str,
-		const uint16_t directory_str_length,
+		const char* filepath_str,
+		const uint16_t filepath_str_length,
 		const void* data_buffer,
 		const uint16_t data_buffer_length,
 		const bool overwrite) {
@@ -290,23 +288,15 @@ sd_card_write_to_file(
 
 	/// Check parameters
 	assert(sd_card_initialise);
-	assert(filename_str != NULL);
-	assert(filename_str_length > 0);
-	assert(directory_str != NULL);
-	assert(directory_str_length > 0);
+	assert(filepath_str != NULL);
+	assert(filepath_str_length > 0);
 
     /// Create filepath
     const uint32_t filepath_length = 200u;
     char filepath[filepath_length];
-    assert(filepath_length > directory_str_length + filename_str_length);
-    sprintf(
-    		filepath,
-    		"%s/%s",
-			directory_str,
-			filename_str);
     error = f_open(
     		&g_fileObject,
-			_T(filepath),
+			_T(filepath_str),
 			(FA_WRITE | FA_READ | FA_CREATE_ALWAYS));
     if (error) {
     	assert(error != FR_INVALID_NAME);
