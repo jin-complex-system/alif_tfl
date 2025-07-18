@@ -2,7 +2,7 @@
 
 # Setup Project
 
-## How to run the project with Visual Studio Code
+## How to setup the project with Visual Studio Code
 
 1. Using Visual Studio Code, open the directory at [`alif_src`](alif_src)
 2. Configure instructions according to README.md provided
@@ -24,9 +24,34 @@ git submodule update --init --recursive
 - Type out the entire name `COM6` rather than just `6`
 8. When programming is finished, view the UART console output
 
+
+# Preprocess Project
+
+The main project that demonstrates preprocessing audio and conduct inference.
+
 ## Project Recreation
 
 To re-create the project from scratch, see [`recreate_new_project_from_blinky.md`](docs/recreate_new_project_from_blinky.md)
+
+## Instructions on How to Use
+
+1. If necessary, update the [models](/models/)
+- Note that current builds only support the HE core at the moment
+2. Navigate to [`parameters.h`](/preprocess/parameters.h) and determine which paraemters need to be configure
+- Comment out `#define LOAD_AUDIO_AND_PREPROCESS           1` if you want to load preprocessed data directly into the model
+3. Navigate to [`inference_parameters.h](/libs/inference/inference_definitions.h) and determine which parameters need to be configure:
+- Comment out `#define USE_NPU_MODEL               1` if you want to not use the NPU-version of the model
+- Adjust changes to reflect the new model(s) if relevant
+4. Insert a SD card with the following directories created:
+- `Alif_Audio` for audio data (16-bit signed audio)
+- `out_A` - Output for audio predictions
+- `Alif_Pre` for preprocessed audio data (8-bit unsigned mel spectrogram)
+- `out_P` - Output for preprocessed predictions
+5. [Program the Alif Ensemble Dev Kit](#how-to-program-on-visual-studio-code)
+6. Check the UART output
+7. When it is done, grab the output files from the SD card
+8. If necessary, conduct post-processing of using [Python scripts](../python_src/README.md)
+
 
 # TODO
 
