@@ -1,7 +1,7 @@
 import os
 import glob
 
-TFRECORD_EXT = 'tfrecord'
+EDGE_FILE_EXT = 'edge'
 
 def parse_file(
         filepath):
@@ -54,7 +54,7 @@ def parse_files(
     y_pred = []
     y_test = []
 
-    for filepath in glob.glob(os.path.join(target_directory, f'*.{TFRECORD_EXT}')):
+    for filepath in glob.glob(os.path.join(target_directory, f'*.{EDGE_FILE_EXT}')):
         class_id, prediction = parse_file(filepath=filepath)
 
         y_test.append(class_id)
