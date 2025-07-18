@@ -158,7 +158,8 @@ def _main(
     print("Done")
 
 if __name__ == '__main__':
-    target_directory = "out_P"
+    target_directory = "out_A"
+    # target_directory = "out_P"
     output_directory = "_my_results"
     num_classes = 19
 

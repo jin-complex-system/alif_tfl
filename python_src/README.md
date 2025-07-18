@@ -18,8 +18,10 @@ pip install -r requirements.txt
 ```
 3. To parse output from the SD card, copy the output directory to `python_src`:
 ```bash
-cp -r <sd_card_location>/out_P <alif_tfl_repo_path>/python_src
+cp -r <sd_card_location>/out_A <alif_tfl_repo_path>/python_src
 ```
+- Example is using `out_A`. If needed, change the directory inside `parse_output.py` before running
+
 4. Run [`parse_output.py`](parse_output.py) and read the output directory
 ```bash
 python3 parse_output.py
