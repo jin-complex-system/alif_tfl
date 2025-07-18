@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// #define LOAD_AUDIO_AND_PREPROCESS           1
+#define LOAD_AUDIO_AND_PREPROCESS           1
 
 /// Varying parameters
 #define AUDIO_SAMPLE_DATA_BITS              16
@@ -37,7 +37,6 @@ typedef int32_t audio_data_type;
 #define POWER_SPECTRUM_BUFFER_LENGTH        (DSP_ACOUSTIC_INPUT_BUFFER_LENGTH * 2)
 
 /// Buffer parameters
-#define POWER_SPECTRUM_BUFFER_LENGTH        (DSP_ACOUSTIC_INPUT_BUFFER_LENGTH * 2)
 #define MEL_SPECTROGRAM_INPUT_SIZE          (AUDIO_FRAME_LENGTH * 2)
 #define MEL_SPECTROGRAM_BUFFER_LENGTH       (N_MELS * NUM_FRAMES)
 
