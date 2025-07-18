@@ -81,7 +81,7 @@ preprocess_buffer_measure_individual(
 
                 const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                     &power_spectrum_buffer[0],
-                    POWER_SPECTRUM_BUFFER_LENGTH,
+                    POWER_SPECTRUM_LENGTH,
                     &mel_spectrogram_buffer[frame_iterator * N_MELS],
                     N_FFT,
                     SAMPLING_RATE_PER_SECOND,
@@ -141,7 +141,7 @@ preprocess_buffer(const uint16_t num_iterations) {
 
             const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                 &power_spectrum_buffer[0],
-                POWER_SPECTRUM_BUFFER_LENGTH,
+                POWER_SPECTRUM_LENGTH,
                 &mel_spectrogram_buffer[frame_iterator * N_MELS],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
