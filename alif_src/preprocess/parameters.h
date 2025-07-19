@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LOAD_AUDIO_AND_PREPROCESS           1
+// #define LOAD_AUDIO_AND_PREPROCESS           1
 
 /// Varying parameters
 #define AUDIO_SAMPLE_DATA_BITS              16
