@@ -72,12 +72,41 @@ def parse_files(
 
     return y_pred, y_test
 
-def create_confusion_matrix(
+def export_classification_report_csv(
+        cr,
+        target_directory,
+        filename):
+    """
+    Export classification report into CSV
+
+    Args:
+        cr - classification report as str or dict
+        target_directory - target directory
+        filename - filename of csv file
+    """
+    import csv
+
+    csv_filepath = os.path.join(target_directory, "{}.csv".format(filename))
+    
+    if (type(cr) == str):
+        f = open(csv_filepath, 'w')
+        f.write(cr)
+        f.close()
+    elif (type(cr) == dict):
+        with open(csv_filepath, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+
+            for key, value in cr.items():
+                writer.writerow([key, value])
+    else:
+        assert(False)
+
+def export_results(
     y_pred,
     y_test,
     num_classes,
     output_directory,
-    filename="confusion_matrix"
+    filename_prefix=""
 ):
     """ Create confusin matrix figures from lists
 
@@ -95,12 +124,13 @@ def create_confusion_matrix(
     import tensorflow as tf
     import seaborn as sn
     import matplotlib.pyplot as plt
+    from sklearn.metrics import classification_report
 
     # Constants
     CONFUSION_MATRIX_FIGURE_DPI=600
     TITLE="Confusion Matrix"
-    FIGURE_FILENAME_WITH_ANNOTATION = "{}_annot.png".format(filename)
-    FIGURE_FILENAME_NO_ANNOTATION = "{}_no_annot.png".format(filename)
+    FIGURE_FILENAME_WITH_ANNOTATION = "{}_confusion_matrix_annot.png".format(filename_prefix)
+    FIGURE_FILENAME_NO_ANNOTATION = "{}_confusion_matrix_no_annot.png".format(filename_prefix)
 
     cm = tf.math.confusion_matrix(
         y_test,
@@ -137,6 +167,19 @@ def create_confusion_matrix(
     plt.savefig(os.path.join(output_directory, FIGURE_FILENAME_NO_ANNOTATION))
     plt.close()
 
+    # Export classification report as a string
+    cr_string = classification_report(
+        y_true=y_test,
+        y_pred=y_pred,
+        labels=None,
+        digits=4,
+        output_dict=False,
+    )
+    export_classification_report_csv(
+        cr_string,
+        output_directory,
+        filename="{}_str_model_cr".format(filename_prefix)
+    )
 
 def _main(
         target_directory,
@@ -148,18 +191,18 @@ def _main(
 
     y_pred, y_test = parse_files(target_directory=target_directory)
 
-    create_confusion_matrix(
+    export_results(
         y_pred=y_pred,
         y_test=y_test,
         num_classes=num_classes,
         output_directory=output_directory,
-        filename="confusion_matrix",
+        filename_prefix="edge",
     )
     print("Done")
 
 if __name__ == '__main__':
-    target_directory = "out_A"
-    # target_directory = "out_P"
+    # target_directory = "out_A"
+    target_directory = "out_P"
     output_directory = "_my_results"
     num_classes = 19
 
