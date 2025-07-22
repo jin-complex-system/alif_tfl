@@ -21,7 +21,7 @@ typedef int8_t inference_output_data_type;
 #define EXPECTED_OUTPUT_DATA_TYPE   kTfLiteInt8
 
 #ifdef USE_ORBIWISE
-#define NUM_CLASSES                 19
+#define NUM_CLASSES                 20
 
 #ifdef USE_NPU_MODEL
 #include <model_orbw_19_Q_HE_vela.h>

@@ -133,7 +133,6 @@ inference_tf_set_input(
 	for (int dims_iterator = 0; dims_iterator < inputTensor->dims->size; dims_iterator++) {
 		tensor_size = tensor_size * inputTensor->dims->data[dims_iterator];
 	}
-	printf("Input size: %u\r\n", tensor_size);
 	// assert(input_buffer_length == tensor_size);
 #endif // NDEBUG
 
@@ -182,7 +181,6 @@ inference_tf_get_output(
 	for (int dims_iterator = 0; dims_iterator < outputtTensor->dims->size; dims_iterator++) {
 		tensor_size = tensor_size * outputtTensor->dims->data[dims_iterator];
 	}
-	printf("Output size: %u\r\n", tensor_size);
 	// assert(output_buffer_length == tensor_size);
 	
 #endif // NDEBUG
@@ -201,7 +199,7 @@ inference_tf_get_output(
 
     /// Unload output buffer
     {
-        for (uint32_t tensor_iterator = 0; tensor_iterator < output_buffer_length; tensor_iterator++) {
+        for (uint32_t tensor_iterator = 0; tensor_iterator < tensor_size; tensor_iterator++) {
         	inference_output_data_type my_output = tensor_output[tensor_iterator];
         	output_buffer[tensor_iterator] = my_output;
         }
