@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-// #define LOAD_AUDIO_AND_PREPROCESS           1
+#define LOAD_AUDIO_AND_PREPROCESS           1
+// #define SAVE_RESULT_TO_SD_CARD              1 
 
 /// Varying parameters
 #define AUDIO_SAMPLE_DATA_BITS              16
@@ -24,7 +25,6 @@ typedef int32_t audio_data_type;
 #define SAMPLING_RATE_PER_SECOND            44100
 
 #define TOP_DECIBEL                         80.0f
-
 
 /// Power spectrum parameters
 #define AUDIO_FRAME_LENGTH                  N_FFT

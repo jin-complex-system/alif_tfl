@@ -7,6 +7,7 @@ project:
         - file: main.c
         - file: app/app.h
         - file: app/app.c
+        
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -14,20 +15,24 @@ project:
         - file: ../libs/common_app_utils/logging/uart_tracelib.c
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+
     - group: inference
       files:
         - file: ../libs/inference/inference_definitions.h
         - file: ../libs/inference/inference_tf.h
         - file: ../libs/inference/inference_tf.cpp
+
     - group: npu_driver
       files:
         - file: ../libs/npu_driver/include/npu_driver.h
         - file: ../libs/npu_driver/include/npu_definitions.h
         - file: ../libs/npu_driver/src/npu_driver.c
+
     - group: led
       files:
         - file: ../libs/led/led.h
         - file: ../libs/led/led.c
+
     - group: FatFS
       files:
         - file: ../libs/FatFS/diskio.h
@@ -37,14 +42,18 @@ project:
         - file: ../libs/FatFS/ffconf.h
         - file: ../libs/FatFS/ffsystem.c
         - file: ../libs/FatFS/ffunicode.c
+
     - group: sd_card
       files:
         - file: ../libs/sd_card/sd_card.h
         - file: ../libs/sd_card/sd_card.c
+
     - group: models
       files:
         - file: ../models/model_orbw_19_Q_HE_vela.h
         - file: ../models/model_orbw_19_Q_HE.h
+        - file: ../models/model_us_Q_HE_vela.h
+        - file: ../models/model_us_Q_HE.h
         
     - group: dsp_preprocess
       files:

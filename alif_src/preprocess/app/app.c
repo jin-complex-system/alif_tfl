@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include <sd_card.h>
 #include <ff.h>
@@ -157,7 +159,7 @@ preprocess_buffer(const uint16_t num_iterations) {
         convert_power_to_decibel_and_scale(
             mel_spectrogram_buffer,
             (uint8_t*)mel_spectrogram_buffer,
-            N_MELS * NUM_FRAMES,
+            MEL_SPECTROGRAM_BUFFER_LENGTH,
             max_mel);
     }
 
@@ -218,20 +220,34 @@ void
 app_main_loop(void) {
     printf("app_main_loop()\r\n");
 
+#ifdef USE_ORBIWISE
 #ifdef LOAD_AUDIO_AND_PREPROCESS
     /// Constants
-    const char INPUT_DIRECTORY[] = "Alif_Audio";
-    const char OUTPUT_DIRECTORY[] = "out_A";
+    const char INPUT_DIRECTORY[] = "ow_audio";
+    const char OUTPUT_DIRECTORY[] = "out_owA";
 #else
-    const char INPUT_DIRECTORY[] = "Alif_Pre";
-    const char OUTPUT_DIRECTORY[] = "out_P";
+    const char INPUT_DIRECTORY[] = "ow_pre";
+    const char OUTPUT_DIRECTORY[] = "out_owP";
 #endif // LOAD_AUDIO_AND_PREPROCESS
+
+#else
+#ifdef LOAD_AUDIO_AND_PREPROCESS
+    /// Constants
+    const char INPUT_DIRECTORY[] = "ub_audio";
+    const char OUTPUT_DIRECTORY[] = "out_ubA";
+#else
+    const char INPUT_DIRECTORY[] = "ub_pre";
+    const char OUTPUT_DIRECTORY[] = "ub_owP";
+#endif // LOAD_AUDIO_AND_PREPROCESS
+#endif // USE_ORBIWISE
 
     /// Variables
     DIR read_directory;
     bool read_sd_card = false;
     bool success;
     FILINFO current_file_info;
+    uint64_t num_inferences = 0;
+    uint32_t class_id = NUM_CLASSES + 1;
 
     current_state = APP_STATE_INIT;
     printf("Begin while(1)\r\n");
@@ -240,6 +256,9 @@ app_main_loop(void) {
             case APP_STATE_INIT:
                 printf("APP_STATE_INIT");
                 read_sd_card = false;
+                class_id = NUM_CLASSES + 1;
+                num_inferences = 0;
+
                 current_state = APP_STATE_CHECK_BUTTON;
                 break;
             case APP_STATE_CHECK_BUTTON:
@@ -273,6 +292,8 @@ app_main_loop(void) {
             case APP_STATE_READ_SD_CARD:
                 printf("APP_STATE_READ_SD_CARD\r\n");
                 assert(read_sd_card);
+                class_id = NUM_CLASSES + 1;
+
                 success = sd_card_get_next_file_information(
 					&read_directory,
 					&current_file_info);
@@ -304,6 +325,13 @@ app_main_loop(void) {
                         current_file_info.fsize
                     );
 
+                    /// Set the class id from the filename
+                    const char* sample_id_string = strtok(current_file_info.fname, "-");
+                    const char* class_id_string = strtok(NULL, "-");
+
+                    class_id = atoi(class_id_string);
+                    assert(class_id < NUM_CLASSES);
+
                     #ifdef LOAD_AUDIO_AND_PREPROCESS
 
                     // Copy audio into buffer
@@ -331,7 +359,7 @@ app_main_loop(void) {
             case APP_STATE_PREPROCESS:
                 printf("APP_STATE_PREPROCESS\r\n");
                 #define NUM_ITERATIONS 1
-
+                
                 memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
                 memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
                 memset(prediction_buffer, 0, sizeof(prediction_buffer));
@@ -360,19 +388,27 @@ app_main_loop(void) {
                 );
 
                 int8_t best_result = -110;
-                uint16_t best_class_id = PREDICTION_BUFFER_LENGTH;
+                uint16_t predicted_class_id = PREDICTION_BUFFER_LENGTH;
 
                 for (uint16_t class_iterator = 0; class_iterator < PREDICTION_BUFFER_LENGTH; class_iterator++) {
                     if (prediction_buffer[class_iterator] > best_result) {
-                        best_class_id = class_iterator;
+                        predicted_class_id = class_iterator;
                         best_result = prediction_buffer[class_iterator];
                     }
                 }
+                num_inferences++;
 
-                printf("Best class: %u, with result %i\r\n", best_class_id, (int16_t)best_result);
+                printf(
+                    "Inference iteration: %llu, Class id: %u, predicted class: %u, with result %i\r\n",
+                    num_inferences,
+                    class_id,
+                    predicted_class_id, 
+                    (int16_t)best_result);
                 current_state = APP_STATE_SAVE_SD_CARD;
                 break;
             case APP_STATE_SAVE_SD_CARD:
+
+            #ifdef SAVE_RESULT_TO_SD_CARD
                 printf("APP_STATE_SAVE_SD_CARD\r\n");
                 if (read_sd_card) {
                     char* output_filepath = (char*)(&power_spectrum_buffer[0]);
@@ -406,6 +442,7 @@ app_main_loop(void) {
 
                     // sd_card_close_directory(&write_directory);
                 }
+            #endif // SAVE_RESULT_TO_SD_CARD
 
                 current_state = APP_STATE_CHECK_BUTTON;
                 break;

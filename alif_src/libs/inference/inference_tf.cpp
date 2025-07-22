@@ -17,12 +17,6 @@
 
 #ifdef USE_TENSORFLOW
 
-#ifdef USE_NPU_MODEL
-#include <model_orbw_19_Q_HE_vela.h>
-#else
-#include <model_orbw_19_Q_HE.h>
-#endif // USE_NPU_MODEL
-
 static const
 tflite::Model*
 s_model = nullptr;
