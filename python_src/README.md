@@ -4,7 +4,9 @@ Collection of Python scripts that run in host's WSL.
 
 Since tensorflow no longer exists in Windows, we have to run our Python scripts in WSL.
 
-# WSL Setup
+# Setup
+
+## WSL Setup
 
 Follow the instructions in [StackOverflow](https://askubuntu.com/a/1508361) to expose the COM ports to WSL2. Note that the device is most likely a USB serial adaptor (check by disconnecting and connecting)
 
@@ -48,7 +50,25 @@ csi_3@CSIDEV3:~$ ls /dev/ttyACM*
 /dev/ttyACM0  /dev/ttyACM1
 ```
 
-# Instructions
+To detach the COM port, run the following in the Windows Powershell:
+```bash
+PS C:\WINDOWS\system32> usbipd detach --busid 1-5
+PS C:\WINDOWS\system32> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-3    187c:0550  USB Input Device                                              Not shared
+1-5    04b4:0005  USB-Serial Adapter 1, USB-Serial Adapter 2, USB-Serial (D...  Shared
+1-7    046d:c335  G910, USB Input Device, Virtual HID Framework (VHF) HID d...  Not shared
+1-8    1532:0084  Razer DeathAdder V2, USB Input Device                         Not shared
+1-14   8087:0032  Intel(R) Wireless Bluetooth(R)                                Not shared
+
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32>
+```
+
+## Running Python to grab output from SD card
 
 1. Clone the git repository inside your WSL and navigate into the Python script directory
 ```bash
@@ -66,14 +86,21 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-3. To parse output from the SD card, copy the output directory to `python_src`:
+
+# Python scripts
+
+## Parse Output from SD card
+1. To parse output from the SD card, copy the output directory to `python_src`:
 ```bash
 cp -r <sd_card_location>/out_A <alif_tfl_repo_path>/python_src
 ```
 - Example is using `out_A`. If needed, change the directory inside `parse_output.py` before running
 
-4. Run [`parse_output.py`](parse_output.py) and read the output directory
+2. Run [`parse_output.py`](parse_output.py) and read the output directory
 ```bash
 python3 parse_output.py
 cd _my_results
 ```
+
+## Parse Output from UART
+TODO:
