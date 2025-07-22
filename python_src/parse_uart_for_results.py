@@ -39,7 +39,7 @@ def parse_uart_for_results(
     serialPort.reset_input_buffer()
 
     y_pred = []
-    y_true = []
+    y_test = []
 
     num_seconds = 0
     while(num_seconds <= wait_timeout_seconds):
@@ -71,11 +71,11 @@ def parse_uart_for_results(
             if debug:
                 print(serial_string)
                 print("Class id: {}, predicted_result: {}".format(class_id, predicted_result))
-            y_true.append(class_id)
+            y_test.append(class_id)
             y_pred.append(predicted_result)
     serialPort.close()
     
-    return y_pred, y_true
+    return y_pred, y_test
 
 def parse_inference_results(
         target_string):
@@ -102,12 +102,27 @@ def parse_inference_results(
     return class_id, predicted_result
 
 def _main():
+    # Import libraries
+    from export_results import export_results
+
+
     UART_WSL_COM_PORT = "/dev/ttyACM1"
 
-    y_pred, y_true = parse_uart_for_results(
+    y_pred, y_test = parse_uart_for_results(
         target_comport=UART_WSL_COM_PORT,
         wait_timeout_seconds=300,
         debug=True)
+    
+    num_classes=19
+    output_directory="results"
+    
+    export_results(
+        y_pred=y_pred,
+        y_test=y_test,
+        num_classes=num_classes,
+        output_directory=output_directory,
+        filename_prefix="edge",
+    )
     print("Done")
 
 if __name__ == '__main__':
