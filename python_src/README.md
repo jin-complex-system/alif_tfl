@@ -1,3 +1,53 @@
+# Summary
+
+Collection of Python scripts that run in host's WSL.
+
+Since tensorflow no longer exists in Windows, we have to run our Python scripts in WSL.
+
+# WSL Setup
+
+Follow the instructions in [StackOverflow](https://askubuntu.com/a/1508361) to expose the COM ports to WSL2. Note that the device is most likely a USB serial adaptor (check by disconnecting and connecting)
+
+Console from Windows PowerShell:
+```bash
+PS C:\WINDOWS\system32> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-3    187c:0550  USB Input Device                                              Not shared
+1-5    04b4:0005  USB-Serial Adapter 1, USB-Serial Adapter 2, USB-Serial (D...  Not shared
+1-7    046d:c335  G910, USB Input Device, Virtual HID Framework (VHF) HID d...  Not shared
+1-8    1532:0084  Razer DeathAdder V2, USB Input Device                         Not shared
+1-14   8087:0032  Intel(R) Wireless Bluetooth(R)                                Not shared
+
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32> usbipd bind --busid 1-5
+PS C:\WINDOWS\system32> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-3    187c:0550  USB Input Device                                              Not shared
+1-5    04b4:0005  USB-Serial Adapter 1, USB-Serial Adapter 2, USB-Serial (D...  Shared
+1-7    046d:c335  G910, USB Input Device, Virtual HID Framework (VHF) HID d...  Not shared
+1-8    1532:0084  Razer DeathAdder V2, USB Input Device                         Not shared
+1-14   8087:0032  Intel(R) Wireless Bluetooth(R)                                Not shared
+
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32> usbipd attach --wsl --busid 1-5
+usbipd: info: Using WSL distribution 'Ubuntu-20.04' to attach; the device will be available in all WSL 2 distributions.
+usbipd: info: Detected networking mode 'nat'.
+usbipd: info: Using IP address 192.168.176.1 to reach the host.
+PS C:\WINDOWS\system32>
+```
+
+Console output from WSL:
+```bash
+csi_3@CSIDEV3:~$ ls /dev/ttyACM*
+/dev/ttyACM0  /dev/ttyACM1
+```
+
 # Instructions
 
 1. Clone the git repository inside your WSL and navigate into the Python script directory

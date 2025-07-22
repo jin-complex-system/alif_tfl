@@ -17,9 +17,8 @@ def parse_uart_for_results(
     # Constants
     READ_TIMEOUT_SECONDS = 2
     WRITE_TIMEOUT_SECONDS = 2
-
-    if debug:
-        print("Target port: {}".format(target_comport))
+    
+    print("Target port: {}".format(target_comport))
 
     serialPort = serial.Serial(
             port=target_comport,
@@ -103,10 +102,12 @@ def parse_inference_results(
     return class_id, predicted_result
 
 def _main():
+    UART_WSL_COM_PORT = "/dev/ttyACM1"
+
     y_pred, y_true = parse_uart_for_results(
-        target_comport="COM9",
+        target_comport=UART_WSL_COM_PORT,
         wait_timeout_seconds=300,
-        debug=False)
+        debug=True)
     print("Done")
 
 if __name__ == '__main__':
