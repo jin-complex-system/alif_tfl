@@ -4,3 +4,4 @@ pillow
 matplotlib
 tensorflow
 scikit-learn
+pyserial
