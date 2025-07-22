@@ -43,6 +43,10 @@ def parse_uart_for_results(
 
     num_seconds = 0
     while(num_seconds <= wait_timeout_seconds):
+        if (len(y_pred) > 10):
+            print("End early")
+            break
+
         # Read string
         serial_string = serialPort.readline()
 
@@ -103,26 +107,42 @@ def parse_inference_results(
 
 def _main():
     # Import libraries
-    from export_results import export_results
-
+    # from export_results import export_results
+    import pickle
+    import os
 
     UART_WSL_COM_PORT = "/dev/ttyACM1"
+    output_directory = "_my_results"
+    os.makedirs(output_directory, exist_ok=True)
 
     y_pred, y_test = parse_uart_for_results(
         target_comport=UART_WSL_COM_PORT,
         wait_timeout_seconds=300,
         debug=True)
     
-    num_classes=19
-    output_directory="results"
+    y_pred_filepath = os.path.join(output_directory, 'y_pred_file')
+    y_test_filepath = os.path.join(output_directory, 'y_test_file')
     
-    export_results(
-        y_pred=y_pred,
-        y_test=y_test,
-        num_classes=num_classes,
-        output_directory=output_directory,
-        filename_prefix="edge",
-    )
+    with open(y_pred_filepath, 'wb') as fp:
+        pickle.dump(y_pred, fp)
+    with open(y_test_filepath, 'wb') as fp:
+        pickle.dump(y_test, fp)
+
+    # Check that reading is as expected
+    y_pred_read = list()
+    y_test_read = list()
+
+    with open(y_pred_filepath, 'rb') as fp:
+        y_pred_read = pickle.load(fp)
+    with open(y_test_filepath, 'rb') as fp:
+        y_test_read = pickle.load(fp)
+
+    assert (len(y_pred_read) == len(y_pred))
+    assert (y_pred_read[1] == y_pred[1])
+
+    assert (len(y_test_read) == len(y_test))
+    assert (y_test_read[1] == y_test[1])
+
     print("Done")
 
 if __name__ == '__main__':
