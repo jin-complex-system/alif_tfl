@@ -5,6 +5,19 @@ _my_results
 *.tfrecord
 *.P
 *.png
+_target_audio_files/*
+
+## Orbiwise Directories
+ow_audio/*
+ow_owA/*
+ow_pre/*
+out_owP/*
+
+## Urbansound8K Directories
+ub_audio/*
+out_ubA/*
+ub_pre/*
+ub_owP/*
 
 # Python 
 venv/*
