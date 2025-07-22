@@ -247,7 +247,7 @@ app_main_loop(void) {
     bool success;
     FILINFO current_file_info;
     uint64_t num_inferences = 0;
-    uint32_t class_id = NUM_CLASSES + 1;
+    uint32_t class_id = NUM_CLASSES;
 
     current_state = APP_STATE_INIT;
     printf("Begin while(1)\r\n");
@@ -256,7 +256,7 @@ app_main_loop(void) {
             case APP_STATE_INIT:
                 printf("APP_STATE_INIT");
                 read_sd_card = false;
-                class_id = NUM_CLASSES + 1;
+                class_id = NUM_CLASSES;
                 num_inferences = 0;
 
                 current_state = APP_STATE_CHECK_BUTTON;

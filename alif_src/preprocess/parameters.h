@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LOAD_AUDIO_AND_PREPROCESS           1
+// #define LOAD_AUDIO_AND_PREPROCESS           1
 // #define SAVE_RESULT_TO_SD_CARD              1 
 
 /// Varying parameters
