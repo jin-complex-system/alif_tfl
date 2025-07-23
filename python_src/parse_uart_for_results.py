@@ -133,11 +133,16 @@ def _main(
     time_taken = end_time - start_time
 
     print("Time taken: {}".format(time_taken))
+
+    assert (len(y_pred) == len(y_test))
     
     y_pred_filepath = os.path.join(output_directory, 'y_pred_file')
     y_test_filepath = os.path.join(output_directory, 'y_test_file')
-
-    print("Done")
+    
+    with open(y_pred_filepath, 'wb') as fp:
+        pickle.dump(y_pred, fp)
+    with open(y_test_filepath, 'wb') as fp:
+        pickle.dump(y_test, fp)
 
 if __name__ == '__main__':
     import os
@@ -148,3 +153,4 @@ if __name__ == '__main__':
     # orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
     # _main(output_directory=orbiwise_directory)
 
+    print("Done")
