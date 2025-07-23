@@ -61,13 +61,16 @@ def parse_uart_for_results(
 
             if num_seconds > wait_timeout_seconds:
                 print("Reached timeout")
-            continue
+                break
+            else:
+                continue
         else:
             num_seconds = 0
         
         # Parse for end of reading
         if "End of directory" in serial_string:
             print("Reached end of directory. Exiting")
+            break
 
         # Parse for inference results
         class_id, predicted_result = parse_inference_results(serial_string)
@@ -108,7 +111,9 @@ def parse_inference_results(
 
     return class_id, predicted_result
 
-def _main():
+def _main(
+        output_directory):
+    
     # Import libraries
     # from export_results import export_results
     import pickle
@@ -116,43 +121,30 @@ def _main():
     import time
 
     UART_WSL_COM_PORT = "COM9"
-    output_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
     os.makedirs(output_directory, exist_ok=True)
 
-    start_time = time.time
+    start_time = time.time()
     y_pred, y_test = parse_uart_for_results(
         target_comport=UART_WSL_COM_PORT,
         wait_timeout_seconds=60,
+        max_length=1600,
         debug=False)
-    end_time = time.time
+    end_time = time.time()
     time_taken = end_time - start_time
 
     print("Time taken: {}".format(time_taken))
     
     y_pred_filepath = os.path.join(output_directory, 'y_pred_file')
     y_test_filepath = os.path.join(output_directory, 'y_test_file')
-    
-    with open(y_pred_filepath, 'wb') as fp:
-        pickle.dump(y_pred, fp)
-    with open(y_test_filepath, 'wb') as fp:
-        pickle.dump(y_test, fp)
-
-    # Check that reading is as expected
-    y_pred_read = list()
-    y_test_read = list()
-
-    with open(y_pred_filepath, 'rb') as fp:
-        y_pred_read = pickle.load(fp)
-    with open(y_test_filepath, 'rb') as fp:
-        y_test_read = pickle.load(fp)
-
-    assert (len(y_pred_read) == len(y_pred))
-    assert (y_pred_read[1] == y_pred[1])
-
-    assert (len(y_test_read) == len(y_test))
-    assert (y_test_read[1] == y_test[1])
 
     print("Done")
 
 if __name__ == '__main__':
-    _main()
+    import os
+
+    urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre")
+    _main(output_directory=urbansound_directory)
+
+    # orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
+    # _main(output_directory=orbiwise_directory)
+
