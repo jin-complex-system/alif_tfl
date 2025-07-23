@@ -113,3 +113,49 @@ def export_results(
         output_directory,
         filename="{}_str_model_cr".format(filename_prefix)
     )
+
+def _main(
+        target_directory,
+        output_directory,
+        num_classes):
+    # Import libraries
+    import os
+    import pickle
+
+    y_pred_filepath = os.path.join(target_directory, 'y_pred_file')
+    y_test_filepath = os.path.join(target_directory, 'y_test_file')
+
+    y_pred = []
+    y_test = []
+
+    with open(y_pred_filepath, 'rb') as fp:
+        y_pred = pickle.load(fp)
+    with open(y_test_filepath, 'rb') as fp:
+        y_test = pickle.load(fp)
+    assert(len(y_pred) == len(y_test) and len(y_pred) > 0)
+
+    export_results(
+        y_pred=y_pred,
+        y_test=y_test,
+        num_classes=num_classes,
+        output_directory=output_directory,
+        filename_prefix="edge",
+    )
+
+if __name__ == '__main__':
+    import os
+
+    urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre")
+    orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
+
+    _main(
+        target_directory=urbansound_directory,
+        output_directory=os.path.join(urbansound_directory, "fig"),
+        num_classes=10,
+    )
+    _main(
+        target_directory=urbansound_directory,
+        output_directory=os.path.join(orbiwise_directory, "fig"),
+        num_classes=21,
+    )
+    print("Done")

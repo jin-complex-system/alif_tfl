@@ -77,28 +77,31 @@ def parse_files(
 
 def _main(
         target_directory,
-        output_directory,
-        num_classes):
+        output_directory):
+    # Import libraries
+    import pickle
+
     y_pred, y_test = parse_files(
         target_directory=target_directory,
         signed=True)
-
-    export_results(
-        y_pred=y_pred,
-        y_test=y_test,
-        num_classes=num_classes,
-        output_directory=output_directory,
-        filename_prefix="edge",
-    )
-    print("Done")
+    assert (len(y_pred) == len(y_test))
+    
+    y_pred_filepath = os.path.join(output_directory, 'y_pred_file')
+    y_test_filepath = os.path.join(output_directory, 'y_test_file')
+    
+    with open(y_pred_filepath, 'wb') as fp:
+        pickle.dump(y_pred, fp)
+    with open(y_test_filepath, 'wb') as fp:
+        pickle.dump(y_test, fp)
 
 if __name__ == '__main__':
-    # target_directory = "out_A"
+    import os
+
     target_directory = "out_P"
-    output_directory = "_my_results"
-    num_classes = 21
+    output_directory = os.path.join("_my_results", "SD_card_output")
 
     _main(
         target_directory=target_directory,
-        output_directory=output_directory,
-        num_classes=num_classes)
+        output_directory=output_directory)
+    
+    print("Done")
