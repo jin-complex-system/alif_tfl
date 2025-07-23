@@ -7,7 +7,7 @@
 
 #define USE_NPU_MODEL               1
 
-#define USE_ORBIWISE                1
+// #define USE_ORBIWISE                1
 
 #ifdef USE_TENSORFLOW
 #include <tensorflow/lite/c/common.h>
@@ -15,6 +15,8 @@
 
 typedef uint8_t inference_input_data_type;
 typedef int8_t inference_output_data_type;
+
+#define CROPPED_NUM_FRAMES          384
 
 #ifdef USE_TENSORFLOW
 #define EXPECTED_INPUT_DATA_TYPE    kTfLiteUInt8
@@ -38,11 +40,7 @@ typedef int8_t inference_output_data_type;
 #include <model_us_19_Q_HE.h>
 #endif // USE_NPU_MODEL
 
-
 #endif // USE_ORBIWISE
-
-
-
 #endif // USE_TENSORFLOW
 
 #endif /* INFERENCE_DEFINITIONS_H_ */

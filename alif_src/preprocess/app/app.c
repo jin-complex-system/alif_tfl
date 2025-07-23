@@ -15,11 +15,13 @@
 #include <parameters.h>
 
 /// Audio DSP
+#ifdef LOAD_AUDIO_AND_PREPROCESS
 #include <hann_window_scale_2048.h>
 #include <audio_dsp_fft.h>
 #include <power_spectrum.h>
 #include <mel_spectrogram.h>
 #include <power_to_decibel.h>
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
 static APP_STATE
 current_state = APP_STATE_INIT;
@@ -39,10 +41,13 @@ mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)
 inference_output_data_type
 prediction_buffer[PREDICTION_BUFFER_LENGTH] __attribute__((aligned(16)));
 
+#ifdef LOAD_AUDIO_AND_PREPROCESS
 static inline
 void
 preprocess_buffer_measure_individual(
-    const uint16_t num_iterations) {
+    const uint16_t num_iterations,
+    const uint32_t num_frames_to_read) {
+    assert(num_frames_to_read <= NUM_FRAMES);
 
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
@@ -53,8 +58,9 @@ preprocess_buffer_measure_individual(
         for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
             float max_mel = 1e-16f;
 
-            for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
+            for (uint32_t frame_iterator = 0; frame_iterator < num_frames_to_read; frame_iterator++) {
                 const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+                assert(audio_iterator < INPUT_BUFFER_LENGTH);
 
                 compute_power_spectrum_audio_samples(
                     &audio_input_buffer[audio_iterator],
@@ -117,7 +123,11 @@ preprocess_buffer_measure_individual(
 
 static inline
 void
-preprocess_buffer(const uint16_t num_iterations) {
+preprocess_buffer(
+    const uint16_t num_iterations,
+    const uint32_t num_frames_to_read) {
+    assert(num_frames_to_read <= NUM_FRAMES);
+
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
 
@@ -127,8 +137,9 @@ preprocess_buffer(const uint16_t num_iterations) {
     for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
         float max_mel = 1e-16f;
 
-        for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
+        for (uint32_t frame_iterator = 0; frame_iterator < num_frames_to_read; frame_iterator++) {
             const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+            assert(audio_iterator < INPUT_BUFFER_LENGTH);
 
             compute_power_spectrum_audio_samples(
                 &audio_input_buffer[audio_iterator],
@@ -159,12 +170,13 @@ preprocess_buffer(const uint16_t num_iterations) {
         convert_power_to_decibel_and_scale(
             mel_spectrogram_buffer,
             (uint8_t*)mel_spectrogram_buffer,
-            MEL_SPECTROGRAM_BUFFER_LENGTH,
+            N_MELS * num_frames_to_read,
             max_mel);
     }
 
     toggle_led(LED_GREEN);
 }
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
 void
 app_setup(void) {
@@ -206,15 +218,17 @@ app_setup(void) {
         printf("Sucessfully setup SD card\r\n");
     }
 
+#ifdef LOAD_AUDIO_AND_PREPROCESS
     initialise_power_spectrum(N_FFT);
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
+    printf("Audio input buffer length: %lu\r\n", INPUT_BUFFER_LENGTH);
     printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
 #if NUM_SECONDS_DESIRED_AUDIO == NUM_SECONDS_AUDIO
     printf("num frames: %lu\r\n", NUM_FRAMES);
 #else
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
-
 
     /// Clear all the buffers
     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
@@ -259,6 +273,7 @@ app_main_loop(void) {
     FILINFO current_file_info;
     uint64_t num_inferences = 0;
     uint32_t class_id = NUM_CLASSES;
+    uint32_t length_read = 0;
 
     current_state = APP_STATE_INIT;
     printf("Begin while(1)\r\n");
@@ -346,19 +361,20 @@ app_main_loop(void) {
                     #ifdef LOAD_AUDIO_AND_PREPROCESS
 
                     // Copy audio into buffer
-                    uint32_t length_read = sd_card_read_from_file(
+                    length_read = 0;
+                    length_read = sd_card_read_from_file(
                             audio_input_buffer,
                             sizeof(audio_input_buffer),
                             filepath);
                     current_state = APP_STATE_PREPROCESS;
                     #else
-                    uint32_t length_read = sd_card_read_from_file(
+                    length_read = 0;
+                    length_read = sd_card_read_from_file(
                             (uint8_t*)mel_spectrogram_buffer,
                             sizeof(mel_spectrogram_buffer),
                             filepath);
                     current_state = APP_STATE_INFERENCE;
                     #endif // LOAD_AUDIO_AND_PREPROCESS
-
 
                     printf("Length read: %u\r\n", length_read);
                     // printf("I read: %c\r\n", audio_input_buffer[0]);
@@ -370,24 +386,42 @@ app_main_loop(void) {
             case APP_STATE_PREPROCESS:
                 printf("APP_STATE_PREPROCESS\r\n");
                 #define NUM_ITERATIONS 1
-                
+
+#ifdef LOAD_AUDIO_AND_PREPROCESS
                 memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
                 memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
                 memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
-                printf("Begin preprocessing %u iterations\r\n", NUM_ITERATIONS);
+                uint32_t num_valid_audio_elements = length_read / sizeof(audio_data_type);
+                uint32_t num_frames_to_read = (num_valid_audio_elements / HOP_LENGTH - N_FFT / HOP_LENGTH) + 1;
 
-                preprocess_buffer(NUM_ITERATIONS);
-                // preprocess_buffer_measure_individual(NUM_ITERATIONS);
+                if (num_frames_to_read > NUM_FRAMES) {
+                    num_frames_to_read = NUM_FRAMES;
+                }
+
+                printf("Begin preprocessing %u iterations, with num frames: %lu\r\n", NUM_ITERATIONS, num_frames_to_read);
+                preprocess_buffer(NUM_ITERATIONS, num_frames_to_read);
+                // preprocess_buffer_measure_individual(NUM_ITERATIONS, num_frames_to_read);
+
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
                 current_state = APP_STATE_INFERENCE;
                 break;
             case APP_STATE_INFERENCE:
                 printf("APP_STATE_INFERENCE\r\n");
+
+#ifdef LOAD_AUDIO_AND_PREPROCESS
                 inference_tf_set_input(
                     (inference_input_data_type*)mel_spectrogram_buffer,
                     MEL_SPECTROGRAM_BUFFER_LENGTH
                 );
+#else
+                inference_tf_set_input(
+                    (inference_input_data_type*)mel_spectrogram_buffer,
+                    MEL_SPECTROGRAM_BUFFER_LENGTH
+                );
+#endif // LOAD_AUDIO_AND_PREPROCESS
+
                 inference_tf_predict();
 
                 current_state = APP_STATE_PROCESS_INFERENCE;
