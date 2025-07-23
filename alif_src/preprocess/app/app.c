@@ -170,6 +170,14 @@ void
 app_setup(void) {
     printf("app_setup()\r\n");
 
+    volatile uint32_t i=0x01234567;
+    if ((*((uint8_t*)(&i))) == 0x67) {
+        printf("Little endian\r\n");
+    }
+    else {
+        printf("Big endian\r\n");
+    }
+
 #if defined(ARM_NPU)
     int state;
     /* If Arm Ethos-U NPU is to be used, we initialise it here */
