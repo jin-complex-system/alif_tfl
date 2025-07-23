@@ -1,3 +1,132 @@
+def export_graph(
+        y_pred,
+        y_true,
+        num_classes,
+        output_directory,
+        labels=None
+    ):
+    # Import libraries
+    import numpy as np
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import os
+
+    # Constants
+    FIGURE_DPI = 900
+
+    # Convert lists to numpy arrays for metrics calculation
+    all_true_labels = np.array(y_true)
+    all_pred_labels = np.array(y_pred)
+
+
+    '''
+    MULTI CLASS 
+    '''
+
+    # **Remove elements where true_label >= num_classes**
+    valid_indices = all_true_labels < num_classes  # Boolean mask
+    all_true_labels = all_true_labels[valid_indices]
+    all_pred_labels = all_pred_labels[valid_indices]
+
+    # print(f"The number of classes : {num_classes}")
+    # print(all_pred_labels)
+
+    # Calculate classification metrics
+    accuracy = accuracy_score(all_true_labels, all_pred_labels)
+    precision = precision_score(all_true_labels, all_pred_labels, average='weighted')
+    recall = recall_score(all_true_labels, all_pred_labels, average='weighted')
+    f1 = f1_score(all_true_labels, all_pred_labels, average='weighted')
+    cm = confusion_matrix(all_true_labels, all_pred_labels)
+
+    # # Print metrics
+    # print("Evaluation Results:")
+    # print(f"Accuracy: {accuracy:.4f}")
+    # print(f"Precision (Weighted): {precision:.4f}")
+    # print(f"Recall (Weighted): {recall:.4f}")
+    # print(f"F1-Score (Weighted): {f1:.4f}")
+
+    class_accuracies = []
+    for i in range(cm.shape[0]):
+        acc=np.sum(cm[i, i]) / np.sum(cm[i, :]) if np.sum(cm[i, :]) > 0 else 0
+        class_accuracies.append((labels[i], f"{acc:.2%}"))
+
+        # print(f"Class {labels[i]}: ACC ({acc:.2%})")
+
+    # Create figure 
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(22, 5),
+        dpi=FIGURE_DPI,
+        gridspec_kw={'wspace': 0.3})
+    
+    # 1. Per-Class Accuracy Table
+    table_data = [["Class", "Accuracy"]] + class_accuracies
+    table = axes[0].table(
+        cellText=table_data,
+        cellLoc='center',
+        loc='center',
+        bbox=[0, 0, 1, 1]
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(12)
+    for key, cell in table.get_celld().items():
+        cell.set_height(0.12)
+        cell.set_text_props(weight='bold' if key[0] == 0 else 'normal')
+    axes[0].axis('off')
+    axes[0].set_title("Per-Class Accuracy", fontsize=14, weight='bold')
+
+    # 2. Metrics Table
+    metrics_table = [
+        ["Accuracy", f"{accuracy:.4f}"],
+        ["Precision", f"{precision:.4f}"],
+        ["Recall", f"{recall:.4f}"],
+        ["F1-Score", f"{f1:.4f}"],
+    ]
+    table2 = axes[1].table(
+        cellText=metrics_table,
+        colLabels=["Metric", "Multi-Class"],
+        cellLoc='center',
+        loc='center',
+        bbox=[0, 0, 1, 1]
+    )
+    table2.auto_set_font_size(False)
+    table2.set_fontsize(13)
+    for cell in table2.get_celld().values():
+        cell.set_height(0.22)
+    axes[1].axis('off')
+    axes[1].set_title("Overall Metrics", fontsize=14, weight='bold')
+
+    # 3. Multi-Class Confusion Matrix
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt='d',
+        cmap='Blues',
+        square=True,
+        xticklabels=labels,
+        yticklabels=labels,
+        ax=axes[2],
+        cbar=False,
+        annot_kws={"size": 9}
+    )
+    axes[2].set_title("Multi-Class Confusion Matrix", fontsize=14, weight='bold')
+    axes[2].set_xlabel("Predicted", fontsize=12)
+    axes[2].set_ylabel("True", fontsize=12)
+    axes[2].tick_params(axis='x', rotation=90)
+    axes[2].tick_params(axis='y', rotation=0)
+
+    # Save the figure in the fig folder
+    output_filepath = os.path.join(output_directory, "eval.png")
+
+    fig.tight_layout(pad=2.0)
+    fig.savefig(
+        output_filepath,
+        dpi=FIGURE_DPI,
+        bbox_inches='tight')
+    plt.close()
+
 def export_classification_report_csv(
         cr,
         target_directory,
@@ -117,7 +246,8 @@ def export_results(
 def _main(
         target_directory,
         output_directory,
-        num_classes):
+        num_classes,
+        labels):
     # Import libraries
     import os
     import pickle
@@ -141,21 +271,63 @@ def _main(
         output_directory=output_directory,
         filename_prefix="edge",
     )
+    export_graph(
+        y_pred=y_pred,
+        y_true=y_test,
+        num_classes=num_classes,
+        output_directory=output_directory,
+        labels=labels,
+    )
 
 if __name__ == '__main__':
     import os
 
     urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre")
-    orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
-
+    urbansound_labels = [
+        "AIR_CONDITIONER",
+        "HORN",
+        "CHILDREN",
+        "DOG",
+        "DRILLING",
+        "ENGINE", 
+        "JACKHAMMER",
+        "SIREN",
+        "MUSIC",
+        "FIREARM",
+    ]
     _main(
         target_directory=urbansound_directory,
         output_directory=os.path.join(urbansound_directory, "fig"),
         num_classes=10,
+        labels=urbansound_labels,
     )
+
+    orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
+    orbiwise_labels = [
+        "Car", # c
+        "motorcycle",
+        "truck",
+        "bus", # c
+        "train", # c
+        "Vehicle_horn", # c
+        "siren",  # c
+        "airplane", # c
+        "helicopter",
+        "walk_footsteps", # c
+        "human_voice", # c
+        "crowd",   # c
+        "people_screaming",
+        "women_screaming",
+        "music",   # c
+        "singing", # c
+        "hammer",  # c
+        "jackhammer",
+        "chainsaw",
+    ]
     _main(
-        target_directory=urbansound_directory,
+        target_directory=orbiwise_directory,
         output_directory=os.path.join(orbiwise_directory, "fig"),
-        num_classes=21,
+        num_classes=19,
+        labels=orbiwise_labels,
     )
     print("Done")
