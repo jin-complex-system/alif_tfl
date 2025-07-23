@@ -171,11 +171,14 @@ app_setup(void) {
     printf("app_setup()\r\n");
 
     volatile uint32_t i=0x01234567;
-    if ((*((uint8_t*)(&i))) == 0x67) {
-        printf("Little endian\r\n");
+    volatile uint8_t endian_indicator = (*((uint8_t*)(&i)));
+
+    if (endian_indicator == 0x67) {
+        // Decimel: 103
+        printf("Little endian: %lu\r\n", (uint16_t)endian_indicator);
     }
     else {
-        printf("Big endian\r\n");
+        printf("Big endian: %lu\r\n", (uint16_t)endian_indicator);
     }
 
 #if defined(ARM_NPU)
