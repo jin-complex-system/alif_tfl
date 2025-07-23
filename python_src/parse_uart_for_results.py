@@ -1,18 +1,22 @@
 import serial
+import time
 
 def parse_uart_for_results(
         target_comport,
         wait_timeout_seconds,
+        max_length,
         debug=False):
     """ Parse UART for results
 
     Args:
         target_comport - chosen COMPORT
         wait_timeout_seconds - number of seconds to timeout before we end the communication; must be greater than 1
+        max_length - exit out once length reaches max_length
         debug - If True, print debug statemenets
     """
-    assert(len(target_comport) > 0)
-    assert(wait_timeout_seconds > 1)
+    assert (len(target_comport) > 0)
+    assert (wait_timeout_seconds > 1)
+    assert (max_length > 0)
 
     # Constants
     READ_TIMEOUT_SECONDS = 2
@@ -42,11 +46,8 @@ def parse_uart_for_results(
     y_test = []
 
     num_seconds = 0
-    while(num_seconds <= wait_timeout_seconds):
-        if (len(y_pred) > 10):
-            print("End early")
-            break
-
+    
+    while(num_seconds <= wait_timeout_seconds and len(y_test) <= max_length):
         # Read string
         serial_string = serialPort.readline()
 
@@ -60,7 +61,7 @@ def parse_uart_for_results(
 
             if num_seconds > wait_timeout_seconds:
                 print("Reached timeout")
-                break
+            continue
         else:
             num_seconds = 0
         
@@ -71,12 +72,14 @@ def parse_uart_for_results(
         # Parse for inference results
         class_id, predicted_result = parse_inference_results(serial_string)
 
+        # Valid result
         if class_id > -1 and predicted_result > -1:
-            if debug:
-                print(serial_string)
-                print("Class id: {}, predicted_result: {}".format(class_id, predicted_result))
             y_test.append(class_id)
             y_pred.append(predicted_result)
+
+            assert (len(y_test) == len(y_pred))
+            print("Len: {}, Class id: {}, predicted_result: {}".format(len(y_test), class_id, predicted_result))
+
     serialPort.close()
     
     return y_pred, y_test
@@ -110,15 +113,21 @@ def _main():
     # from export_results import export_results
     import pickle
     import os
+    import time
 
-    UART_WSL_COM_PORT = "/dev/ttyACM1"
-    output_directory = "_my_results"
+    UART_WSL_COM_PORT = "COM9"
+    output_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
     os.makedirs(output_directory, exist_ok=True)
 
+    start_time = time.time
     y_pred, y_test = parse_uart_for_results(
         target_comport=UART_WSL_COM_PORT,
-        wait_timeout_seconds=300,
-        debug=True)
+        wait_timeout_seconds=60,
+        debug=False)
+    end_time = time.time
+    time_taken = end_time - start_time
+
+    print("Time taken: {}".format(time_taken))
     
     y_pred_filepath = os.path.join(output_directory, 'y_pred_file')
     y_test_filepath = os.path.join(output_directory, 'y_test_file')
