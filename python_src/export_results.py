@@ -24,13 +24,10 @@ def export_graph(
     MULTI CLASS 
     '''
 
-    # **Remove elements where true_label >= num_classes**
-    valid_indices = all_true_labels < num_classes  # Boolean mask
-    all_true_labels = all_true_labels[valid_indices]
-    all_pred_labels = all_pred_labels[valid_indices]
-
-    # print(f"The number of classes : {num_classes}")
-    # print(all_pred_labels)
+    # # **Remove elements where true_label >= num_classes**
+    # valid_indices = all_true_labels < num_classes  # Boolean mask
+    # all_true_labels = all_true_labels[valid_indices]
+    # all_pred_labels = all_pred_labels[valid_indices]
 
     # Calculate classification metrics
     accuracy = accuracy_score(all_true_labels, all_pred_labels)
@@ -47,11 +44,14 @@ def export_graph(
     # print(f"F1-Score (Weighted): {f1:.4f}")
 
     class_accuracies = []
-    for i in range(cm.shape[0]):
-        acc=np.sum(cm[i, i]) / np.sum(cm[i, :]) if np.sum(cm[i, :]) > 0 else 0
-        class_accuracies.append((labels[i], f"{acc:.2%}"))
+    for i in range(0, num_classes):
 
-        # print(f"Class {labels[i]}: ACC ({acc:.2%})")
+        if (len(labels) <= i):
+            continue
+        else:
+            acc=np.sum(cm[i, i]) / np.sum(cm[i, :]) if np.sum(cm[i, :]) > 0 else 0
+            class_accuracies.append((labels[i], f"{acc:.2%}"))
+            print(f"Class {labels[i]}: ACC ({acc:.2%})")
 
     # Create figure 
     fig, axes = plt.subplots(
@@ -247,7 +247,14 @@ def _main(
         target_directory,
         output_directory,
         num_classes,
+        negative_ids,
         labels):
+    # Check parameters
+    assert (
+        negative_ids is None or 
+        len(negative_ids) == 0 or 
+        len(negative_ids) < num_classes)
+
     # Import libraries
     import os
     import pickle
@@ -264,16 +271,46 @@ def _main(
         y_test = pickle.load(fp)
     assert(len(y_pred) == len(y_test) and len(y_pred) > 0)
 
+    y_pred_filtered = list()
+    y_test_filtered = list()
+
+    # Filter out negative ids
+    # Note that class_ids saved do not considered negative_ids
+    if (negative_ids is not None and 
+        len(negative_ids) != 0 and
+        len(negative_ids) < num_classes):
+
+        for iterator in range(0, len(y_pred)):
+            append_element = True
+            subtract_test_id = 0
+            for negative_id in negative_ids:
+                if y_test[iterator] == negative_id:
+                    append_element = False
+                elif y_test[iterator] > negative_id:
+                    subtract_test_id = len(negative_ids)
+
+            if append_element:
+                y_test_filtered.append(y_test[iterator] - subtract_test_id)
+                y_pred_filtered.append(y_pred[iterator] - 0)
+                
+        assert (len(y_test_filtered) == len(y_pred_filtered))
+    else:
+        y_test_filtered = y_test
+        y_pred_filtered = y_pred
+        print("No negative ids")
+
+    assert (len(y_test_filtered) == len(y_pred_filtered))
+
     export_results(
-        y_pred=y_pred,
-        y_test=y_test,
+        y_pred=y_pred_filtered,
+        y_test=y_test_filtered,
         num_classes=num_classes,
         output_directory=output_directory,
         filename_prefix="edge",
     )
     export_graph(
-        y_pred=y_pred,
-        y_true=y_test,
+        y_pred=y_pred_filtered,
+        y_true=y_test_filtered,
         num_classes=num_classes,
         output_directory=output_directory,
         labels=labels,
@@ -290,15 +327,19 @@ if __name__ == '__main__':
         "DOG",
         "DRILLING",
         "ENGINE", 
-        "JACKHAMMER",
+        # "JACKHAMMER",
         "SIREN",
         "MUSIC",
         "FIREARM",
     ]
+    urbansound_negative_ids = [6]
+    urbansound_num_classes = len(urbansound_labels)
+
     _main(
         target_directory=urbansound_directory,
         output_directory=os.path.join(urbansound_directory, "fig"),
-        num_classes=10,
+        num_classes=urbansound_num_classes,
+        negative_ids=urbansound_negative_ids,
         labels=urbansound_labels,
     )
 
@@ -324,10 +365,14 @@ if __name__ == '__main__':
         "jackhammer",
         "chainsaw",
     ]
+    orbiwise_negative_ids = [19]
+    orbiwise_num_classes = 20
+
     _main(
         target_directory=orbiwise_directory,
         output_directory=os.path.join(orbiwise_directory, "fig"),
-        num_classes=19,
+        num_classes=orbiwise_num_classes,
+        negative_ids=orbiwise_negative_ids,
         labels=orbiwise_labels,
     )
     print("Done")
