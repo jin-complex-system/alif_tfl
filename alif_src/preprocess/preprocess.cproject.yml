@@ -48,12 +48,12 @@ project:
         - file: ../libs/sd_card/sd_card.h
         - file: ../libs/sd_card/sd_card.c
 
-    - group: models
+    - group: HE_models
       files:
-        - file: ../models/model_orbw_19_Q_HE_vela.h
-        - file: ../models/model_orbw_19_Q_HE.h
-        - file: ../models/model_us_Q_HE_vela.h
-        - file: ../models/model_us_Q_HE.h
+        - file: ../HE_models/model_orbw_19_Q_HE_vela.h
+        - file: ../HE_models/model_orbw_19_Q_HE.h
+        - file: ../HE_models/model_us_Q_HE_vela.h
+        - file: ../HE_models/model_us_Q_HE.h
         
     - group: dsp_preprocess
       files:
@@ -208,7 +208,7 @@ project:
     - ../libs/sd_card
 
     # Models
-    - ../models
+    - ../HE_models/
 
     # # dsp_preprocess: supporting library for dsp_preprocess
     # - ../libs/dsp_preprocessing/external/kissfft/
