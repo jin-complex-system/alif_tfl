@@ -35,7 +35,7 @@ typedef int8_t inference_output_data_type;
 #ifdef USE_NPU_MODEL
 #include <model_us_Q_HE_vela.h>
 #else
-#include <model_us_19_Q_HE.h>
+#include <model_us_Q_HE.h>
 #endif // USE_NPU_MODEL
 
 #endif // USE_ORBIWISE
