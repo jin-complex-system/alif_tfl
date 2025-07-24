@@ -160,6 +160,13 @@ preprocess_buffer(
     }
     assert(shifted_buffer != NULL);
 
+    const uint32_t shifted_buffer_length = N_MELS * num_frames_process;
+    const uint32_t right_padding_length = left_padding_length;
+
+    /// Clear the buffers
+    memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
+    memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+
     printf(
         "Preprocessing %u iterations with %lu frames and padded left with %lu, from original read frames %lu\r\n",
         total_iterations,
@@ -175,6 +182,8 @@ preprocess_buffer(
 
         for (uint32_t frame_iterator = 0; frame_iterator < num_frames_process; frame_iterator++) {
             const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+            const uint32_t mel_iterator = frame_iterator * N_MELS;
+
             assert(audio_iterator < INPUT_BUFFER_LENGTH);
 
             compute_power_spectrum_audio_samples(
@@ -191,7 +200,7 @@ preprocess_buffer(
             const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                 &power_spectrum_buffer[0],
                 POWER_SPECTRUM_LENGTH,
-                &mel_spectrogram_buffer[frame_iterator * N_MELS],
+                &shifted_buffer[mel_iterator],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
                 MAX_FREQUENCY,
@@ -206,8 +215,20 @@ preprocess_buffer(
         convert_power_to_decibel_and_scale(
             shifted_buffer,
             (uint8_t*)shifted_buffer,
-            N_MELS * num_frames_process,
+            shifted_buffer_length,
             max_mel);
+
+        /// If needed, clear the left and right side of shifted_buffer
+        if (right_padding_length > 0) {
+            memset(
+                mel_spectrogram_buffer,
+                0,
+                left_padding_length * sizeof(float));
+            memset(
+                shifted_buffer + shifted_buffer_length,
+                0,
+                right_padding_length * sizeof(uint8_t));
+        }
     }
 
     toggle_led(LED_GREEN);
@@ -422,9 +443,6 @@ app_main_loop(void) {
                 printf("APP_STATE_PREPROCESS\r\n");
 
 #ifdef LOAD_AUDIO_AND_PREPROCESS
-                memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
-                memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
-                memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
                 uint32_t num_valid_audio_elements = length_read / sizeof(audio_data_type);
                 uint32_t num_frames_to_read = (num_valid_audio_elements / HOP_LENGTH - N_FFT / HOP_LENGTH) + 1;
