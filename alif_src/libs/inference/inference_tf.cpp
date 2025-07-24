@@ -133,7 +133,7 @@ inference_tf_set_input(
 	for (int dims_iterator = 0; dims_iterator < inputTensor->dims->size; dims_iterator++) {
 		tensor_size = tensor_size * inputTensor->dims->data[dims_iterator];
 	}
-	// assert(input_buffer_length == tensor_size);
+	assert(input_buffer_length == tensor_size);
 #endif // NDEBUG
 
 	inference_input_data_type* tensor_input;

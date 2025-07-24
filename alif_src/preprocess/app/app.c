@@ -37,6 +37,9 @@ power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)))
 float
 mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
 
+inference_input_data_type
+scale_mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
+
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
 inference_output_data_type
 prediction_buffer[PREDICTION_BUFFER_LENGTH] __attribute__((aligned(16)));
@@ -84,7 +87,6 @@ preprocess_buffer_measure_individual(
         }
         turn_off_led(LED_GREEN);
     }
-
 
     /// Measure compute_power_spectrum_into_mel_spectrogram()
     {
@@ -141,7 +143,7 @@ preprocess_buffer(
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
 
-    float* shifted_buffer;
+    uint8_t* shifted_buffer;
     uint32_t num_frames_process;
     uint32_t left_padding_length = 0;
 
@@ -151,12 +153,12 @@ preprocess_buffer(
 #ifdef LEFT_PADDING
         left_padding_length = (CROPPED_NUM_FRAMES - num_frames_process) / 2;
 #endif // LEFT_PADDING
-        shifted_buffer = mel_spectrogram_buffer + left_padding_length;
+        shifted_buffer = scale_mel_spectrogram_buffer + left_padding_length;
     }
     /// Will need to crop so process less frames
     else if (num_frames_to_read >= CROPPED_NUM_FRAMES) {
         num_frames_process = CROPPED_NUM_FRAMES;
-        shifted_buffer = mel_spectrogram_buffer;
+        shifted_buffer = scale_mel_spectrogram_buffer;
     }
     assert(shifted_buffer != NULL);
 
@@ -166,6 +168,7 @@ preprocess_buffer(
     /// Clear the buffers
     memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
     memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+    memset(scale_mel_spectrogram_buffer, 0, sizeof(scale_mel_spectrogram_buffer));
 
     printf(
         "Preprocessing %u iterations with %lu frames and padded left with %lu, from original read frames %lu\r\n",
@@ -200,7 +203,7 @@ preprocess_buffer(
             const float temp_max = compute_power_spectrum_into_mel_spectrogram(
                 &power_spectrum_buffer[0],
                 POWER_SPECTRUM_LENGTH,
-                &shifted_buffer[mel_iterator],
+                &mel_spectrogram_buffer[mel_iterator],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
                 MAX_FREQUENCY,
@@ -213,22 +216,24 @@ preprocess_buffer(
         }
 
         convert_power_to_decibel_and_scale(
+            mel_spectrogram_buffer,
             shifted_buffer,
-            (uint8_t*)shifted_buffer,
             shifted_buffer_length,
             max_mel);
 
         /// If needed, clear the left and right side of shifted_buffer
+        #ifdef LEFT_PADDING
         if (right_padding_length > 0) {
             memset(
-                mel_spectrogram_buffer,
+                scale_mel_spectrogram_buffer,
                 0,
-                left_padding_length * sizeof(float));
+                left_padding_length);
             memset(
                 shifted_buffer + shifted_buffer_length,
                 0,
-                right_padding_length * sizeof(uint8_t));
+                right_padding_length);
         }
+        #endif // LEFT_PADDING
     }
 
     toggle_led(LED_GREEN);
@@ -292,6 +297,7 @@ app_setup(void) {
     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
     memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
     memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+    memset(scale_mel_spectrogram_buffer, 0, sizeof(scale_mel_spectrogram_buffer));
     memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
     turn_on_led(LED_RED);
@@ -428,8 +434,8 @@ app_main_loop(void) {
                     #else
                     length_read = 0;
                     length_read = sd_card_read_from_file(
-                            (uint8_t*)mel_spectrogram_buffer,
-                            sizeof(mel_spectrogram_buffer),
+                            scale_mel_spectrogram_buffer,
+                            sizeof(scale_mel_spectrogram_buffer),
                             filepath);
                     current_state = APP_STATE_INFERENCE;
                     #endif // LOAD_AUDIO_AND_PREPROCESS
@@ -464,19 +470,11 @@ app_main_loop(void) {
 
                 toggle_led(LED_BLUE);
 
-#ifdef LOAD_AUDIO_AND_PREPROCESS
                 assert(CROPPED_MEL_SPEC_BUFFER_LENGTH <= MEL_SPECTROGRAM_BUFFER_LENGTH);
-
                 inference_tf_set_input(
-                    (inference_input_data_type*)mel_spectrogram_buffer,
+                    scale_mel_spectrogram_buffer,
                     CROPPED_MEL_SPEC_BUFFER_LENGTH
                 );
-#else
-                inference_tf_set_input(
-                    (inference_input_data_type*)mel_spectrogram_buffer,
-                    MEL_SPECTROGRAM_BUFFER_LENGTH
-                );
-#endif // LOAD_AUDIO_AND_PREPROCESS
 
                 inference_tf_predict(NUM_INFERENCE_ITERATIONS);
 
