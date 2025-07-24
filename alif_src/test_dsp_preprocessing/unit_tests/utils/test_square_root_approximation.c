@@ -10,7 +10,7 @@ const double FLOAT_ERROR_TOLERANCE = 1e-4;
 
 void
 test_square_root_approximation() {
-    printf("Running test_square_root_approximation()");
+    printf("Running test_square_root_approximation()\r\n");
 
     const float input_array[] = {
         0.0f, 1.0f, 4.0f, 12.0f, 127.0f,
