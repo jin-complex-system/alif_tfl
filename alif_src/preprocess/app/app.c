@@ -52,6 +52,14 @@ preprocess_buffer_measure_individual(
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
 
+    const uint32_t num_frames_process = num_frames_to_read;
+
+    printf(
+        "Preprocessing %u iterations, with %lu frames to process from original read frames %lu\r\n",
+        total_iterations,
+        num_frames_process,
+        num_frames_to_read);
+
     /// Measure compute_power_spectrum_audio_samples()
     {
         turn_on_led(LED_GREEN);
@@ -126,10 +134,38 @@ void
 preprocess_buffer(
     const uint16_t num_iterations,
     const uint32_t num_frames_to_read) {
+    assert(num_iterations > 0);
     assert(num_frames_to_read <= NUM_FRAMES);
+    assert(CROPPED_NUM_FRAMES <= NUM_FRAMES);
 
     // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
     const uint16_t total_iterations = num_iterations;
+
+    float* shifted_buffer;
+    uint32_t num_frames_process;
+    uint32_t left_padding_length = 0;
+
+    /// Will need to pad
+    if (num_frames_to_read < CROPPED_NUM_FRAMES) {
+        num_frames_process = num_frames_to_read;
+#ifdef LEFT_PADDING
+        left_padding_length = (CROPPED_NUM_FRAMES - num_frames_process) / 2;
+#endif // LEFT_PADDING
+        shifted_buffer = mel_spectrogram_buffer + left_padding_length;
+    }
+    /// Will need to crop so process less frames
+    else if (num_frames_to_read >= CROPPED_NUM_FRAMES) {
+        num_frames_process = CROPPED_NUM_FRAMES;
+        shifted_buffer = mel_spectrogram_buffer;
+    }
+    assert(shifted_buffer != NULL);
+
+    printf(
+        "Preprocessing %u iterations with %lu frames and padded left with %lu, from original read frames %lu\r\n",
+        total_iterations,
+        num_frames_process,
+        left_padding_length,
+        num_frames_to_read);
 
     toggle_led(LED_GREEN);
 
@@ -137,7 +173,7 @@ preprocess_buffer(
     for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
         float max_mel = 1e-16f;
 
-        for (uint32_t frame_iterator = 0; frame_iterator < num_frames_to_read; frame_iterator++) {
+        for (uint32_t frame_iterator = 0; frame_iterator < num_frames_process; frame_iterator++) {
             const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
             assert(audio_iterator < INPUT_BUFFER_LENGTH);
 
@@ -158,7 +194,7 @@ preprocess_buffer(
                 &mel_spectrogram_buffer[frame_iterator * N_MELS],
                 N_FFT,
                 SAMPLING_RATE_PER_SECOND,
-                8000u,
+                MAX_FREQUENCY,
                 N_MELS
             );
 
@@ -168,9 +204,9 @@ preprocess_buffer(
         }
 
         convert_power_to_decibel_and_scale(
-            mel_spectrogram_buffer,
-            (uint8_t*)mel_spectrogram_buffer,
-            N_MELS * num_frames_to_read,
+            shifted_buffer,
+            (uint8_t*)shifted_buffer,
+            N_MELS * num_frames_process,
             max_mel);
     }
 
@@ -225,10 +261,11 @@ app_setup(void) {
     printf("Audio input buffer length: %lu\r\n", INPUT_BUFFER_LENGTH);
     printf("Mel Spectrogram length for %lu s: %lu\r\n", NUM_SECONDS_AUDIO, MEL_SPECTROGRAM_BUFFER_LENGTH);
 #if NUM_SECONDS_DESIRED_AUDIO == NUM_SECONDS_AUDIO
-    printf("num frames: %lu\r\n", NUM_FRAMES);
+    printf("num frames: %lu, num_cropped_frames: %lu \r\n", NUM_FRAMES, CROPPED_NUM_FRAMES);
 #else
     printf("num frames (scaled) desired seconds: %lu\r\n", (NUM_FRAMES * NUM_SECONDS_DESIRED_AUDIO / NUM_SECONDS_AUDIO));
 #endif // NUM_SECONDS_DESIRED_AUDIO
+    printf("Cropped mel spectrogram length: %lu\r\n", CROPPED_MEL_SPEC_BUFFER_LENGTH);
 
     /// Clear all the buffers
     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
@@ -377,15 +414,12 @@ app_main_loop(void) {
                     #endif // LOAD_AUDIO_AND_PREPROCESS
 
                     printf("Length read: %u\r\n", length_read);
-                    // printf("I read: %c\r\n", audio_input_buffer[0]);
-                    assert(length_read > 0);
-                    // assert(length_read == sizeof(audio_input_buffer));
+                    assert(length_read > 0 && length_read <= sizeof(audio_input_buffer));
                 }
                 assert(current_state != APP_STATE_READ_SD_CARD);
                 break;
             case APP_STATE_PREPROCESS:
                 printf("APP_STATE_PREPROCESS\r\n");
-                #define NUM_ITERATIONS 1
 
 #ifdef LOAD_AUDIO_AND_PREPROCESS
                 memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
@@ -395,13 +429,13 @@ app_main_loop(void) {
                 uint32_t num_valid_audio_elements = length_read / sizeof(audio_data_type);
                 uint32_t num_frames_to_read = (num_valid_audio_elements / HOP_LENGTH - N_FFT / HOP_LENGTH) + 1;
 
+                /// Upper limit of number of frames
                 if (num_frames_to_read > NUM_FRAMES) {
                     num_frames_to_read = NUM_FRAMES;
                 }
 
-                printf("Begin preprocessing %u iterations, with num frames: %lu\r\n", NUM_ITERATIONS, num_frames_to_read);
-                preprocess_buffer(NUM_ITERATIONS, num_frames_to_read);
-                // preprocess_buffer_measure_individual(NUM_ITERATIONS, num_frames_to_read);
+                preprocess_buffer(NUM_PREPROCESS_ITERATIONS, num_frames_to_read);
+                // preprocess_buffer_measure_individual(NUM_PREPROCESS_ITERATIONS, num_frames_to_read);
 
 #endif // LOAD_AUDIO_AND_PREPROCESS
 
@@ -410,10 +444,14 @@ app_main_loop(void) {
             case APP_STATE_INFERENCE:
                 printf("APP_STATE_INFERENCE\r\n");
 
+                toggle_led(LED_BLUE);
+
 #ifdef LOAD_AUDIO_AND_PREPROCESS
+                assert(CROPPED_MEL_SPEC_BUFFER_LENGTH <= MEL_SPECTROGRAM_BUFFER_LENGTH);
+
                 inference_tf_set_input(
                     (inference_input_data_type*)mel_spectrogram_buffer,
-                    MEL_SPECTROGRAM_BUFFER_LENGTH
+                    CROPPED_MEL_SPEC_BUFFER_LENGTH
                 );
 #else
                 inference_tf_set_input(
@@ -422,7 +460,9 @@ app_main_loop(void) {
                 );
 #endif // LOAD_AUDIO_AND_PREPROCESS
 
-                inference_tf_predict();
+                inference_tf_predict(NUM_INFERENCE_ITERATIONS);
+
+                toggle_led(LED_BLUE);
 
                 current_state = APP_STATE_PROCESS_INFERENCE;
                 break;
@@ -431,6 +471,7 @@ app_main_loop(void) {
                     prediction_buffer,
                     PREDICTION_BUFFER_LENGTH
                 );
+                
 
                 int8_t best_result = -110;
                 uint16_t predicted_class_id = PREDICTION_BUFFER_LENGTH;

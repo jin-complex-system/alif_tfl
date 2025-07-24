@@ -208,13 +208,20 @@ inference_tf_get_output(
 }
 
 void
-inference_tf_predict(void) {
+inference_tf_predict(
+	const uint32_t num_iterations) {
 #ifdef USE_TENSORFLOW
 
-	printf("Invoke interpreter\r\n");
-	const auto tflite_status =
+	// printf("Invoke interpreter for %lu iterations\r\n", num_iterations);
+	assert(num_iterations > 0);
+
+	for (uint32_t iterator = 0; iterator < num_iterations; iterator++) {
+		const auto tflite_status =
 			s_interpreter->Invoke();
-	printf("Inference status: %u\r\n", tflite_status);
-	assert(tflite_status == kTfLiteOk);
+
+		// printf("Inference status: %u\r\n", tflite_status);
+		assert(tflite_status == kTfLiteOk);
+
+	}	
 #endif // USE_TENSORFLOW
 }

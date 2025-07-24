@@ -38,9 +38,12 @@ inference_tf_get_output(
 
 /**
  * Perform prediction using TensorFlow
+ * 
+ * @param num_iterations
  */
 void
-inference_tf_predict();
+inference_tf_predict(
+	const uint32_t num_iterations);
 
 #ifdef __cplusplus
 }
