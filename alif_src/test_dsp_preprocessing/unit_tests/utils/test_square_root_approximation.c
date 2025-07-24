@@ -32,5 +32,5 @@ test_square_root_approximation() {
         }
     }
 
-    printf("Done with test_square_root_approximation()");
+    printf("Done with test_square_root_approximation()\r\n");
 }
