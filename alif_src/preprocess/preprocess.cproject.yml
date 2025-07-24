@@ -16,6 +16,11 @@ project:
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
 
+    - group: app_preprocess
+      files:
+        - file: ../libs/app_preprocess/app_preprocess.h
+        - file: ../libs/app_preprocess/app_preprocess.c
+
     - group: inference
       files:
         - file: ../libs/inference/inference_definitions.h
@@ -227,8 +232,11 @@ project:
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
 
+    # app_preprocess
+    - ../libs/app_preprocess/
+
     # inference
-    - ../libs/inference
+    - ../libs/inference/
 
     # NPU driver
     - ../libs/npu_driver/include/

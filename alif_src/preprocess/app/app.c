@@ -6,22 +6,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <parameters.h>
+
+#include <app_preprocess.h>
+
 #include <sd_card.h>
 #include <ff.h>
 #include <led.h>
 #include <inference_tf.h>
 #include <npu_driver.h>
-
-#include <parameters.h>
-
-/// Audio DSP
-#ifdef LOAD_AUDIO_AND_PREPROCESS
-#include <hann_window_scale_2048.h>
-#include <audio_dsp_fft.h>
-#include <power_spectrum.h>
-#include <mel_spectrogram.h>
-#include <power_to_decibel.h>
-#endif // LOAD_AUDIO_AND_PREPROCESS
 
 static APP_STATE
 current_state = APP_STATE_INIT;
@@ -31,214 +24,12 @@ current_state = APP_STATE_INIT;
 audio_data_type
 audio_input_buffer[INPUT_BUFFER_LENGTH] __attribute__((aligned(16)));
 
-float
-power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)));
-
-float
-mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
-
 inference_input_data_type
 scale_mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
 inference_output_data_type
 prediction_buffer[PREDICTION_BUFFER_LENGTH] __attribute__((aligned(16)));
-
-#ifdef LOAD_AUDIO_AND_PREPROCESS
-static inline
-void
-preprocess_buffer_measure_individual(
-    const uint16_t num_iterations,
-    const uint32_t num_frames_to_read) {
-    assert(num_frames_to_read <= NUM_FRAMES);
-
-    // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
-    const uint16_t total_iterations = num_iterations;
-
-    const uint32_t num_frames_process = num_frames_to_read;
-
-    printf(
-        "Preprocessing %u iterations, with %lu frames to process from original read frames %lu\r\n",
-        total_iterations,
-        num_frames_process,
-        num_frames_to_read);
-
-    /// Measure compute_power_spectrum_audio_samples()
-    {
-        turn_on_led(LED_GREEN);
-        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
-            float max_mel = 1e-16f;
-
-            for (uint32_t frame_iterator = 0; frame_iterator < num_frames_to_read; frame_iterator++) {
-                const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
-                assert(audio_iterator < INPUT_BUFFER_LENGTH);
-
-                compute_power_spectrum_audio_samples(
-                    &audio_input_buffer[audio_iterator],
-                    AUDIO_FRAME_LENGTH,
-                    power_spectrum_buffer,
-                    POWER_SPECTRUM_BUFFER_LENGTH,
-                    NULL,
-                    0u,
-                    HANN_WINDOW_SCALE_2048_BUFFER,
-                    HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
-                );
-            }
-        }
-        turn_off_led(LED_GREEN);
-    }
-
-    /// Measure compute_power_spectrum_into_mel_spectrogram()
-    {
-        turn_on_led(LED_BLUE);
-        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
-            float max_mel = 1e-16f;
-
-            for (uint32_t frame_iterator = 0; frame_iterator < NUM_FRAMES; frame_iterator++) {
-                const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
-
-                const float temp_max = compute_power_spectrum_into_mel_spectrogram(
-                    &power_spectrum_buffer[0],
-                    POWER_SPECTRUM_LENGTH,
-                    &mel_spectrogram_buffer[frame_iterator * N_MELS],
-                    N_FFT,
-                    SAMPLING_RATE_PER_SECOND,
-                    8000u,
-                    N_MELS
-                );
-
-                if (temp_max > max_mel) {
-                    max_mel = temp_max;
-                }
-            }
-        }
-        turn_off_led(LED_BLUE);
-    }
-
-    /// Measure convert_power_to_decibel()
-    {
-        turn_on_led(LED_RED);
-        for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
-            float max_mel = 25.0f;
-
-            convert_power_to_decibel_and_scale(
-                mel_spectrogram_buffer,
-                (uint8_t*)mel_spectrogram_buffer,
-                N_MELS * NUM_FRAMES,
-                max_mel);
-        }
-        turn_off_led(LED_RED);
-    }
-}
-
-static inline
-void
-preprocess_buffer(
-    const uint16_t num_iterations,
-    const uint32_t num_frames_to_read) {
-    assert(num_iterations > 0);
-    assert(num_frames_to_read <= NUM_FRAMES);
-    assert(CROPPED_NUM_FRAMES <= NUM_FRAMES);
-
-    // const uint16_t total_iterations = num_iterations * NUM_SECONDS_DESIRED_AUDIO;
-    const uint16_t total_iterations = num_iterations;
-
-    uint8_t* shifted_buffer;
-    uint32_t num_frames_process;
-    uint32_t left_padding_length = 0;
-
-    /// Will need to pad
-    if (num_frames_to_read < CROPPED_NUM_FRAMES) {
-        num_frames_process = num_frames_to_read;
-#ifdef LEFT_PADDING
-        left_padding_length = (CROPPED_NUM_FRAMES - num_frames_process) / 2;
-#endif // LEFT_PADDING
-        shifted_buffer = scale_mel_spectrogram_buffer + left_padding_length;
-    }
-    /// Will need to crop so process less frames
-    else if (num_frames_to_read >= CROPPED_NUM_FRAMES) {
-        num_frames_process = CROPPED_NUM_FRAMES;
-        shifted_buffer = scale_mel_spectrogram_buffer;
-    }
-    assert(shifted_buffer != NULL);
-
-    const uint32_t shifted_buffer_length = N_MELS * num_frames_process;
-    const uint32_t right_padding_length = left_padding_length;
-
-    /// Clear the buffers
-    memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
-    memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
-    memset(scale_mel_spectrogram_buffer, 0, sizeof(scale_mel_spectrogram_buffer));
-
-    printf(
-        "Preprocessing %u iterations with %lu frames and padded left with %lu, from original read frames %lu\r\n",
-        total_iterations,
-        num_frames_process,
-        left_padding_length,
-        num_frames_to_read);
-
-    toggle_led(LED_GREEN);
-
-    /// Compute mel spectrogram
-    for (uint16_t iterator = 0; iterator < total_iterations; iterator++) {
-        float max_mel = 1e-16f;
-
-        for (uint32_t frame_iterator = 0; frame_iterator < num_frames_process; frame_iterator++) {
-            const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
-            const uint32_t mel_iterator = frame_iterator * N_MELS;
-
-            assert(audio_iterator < INPUT_BUFFER_LENGTH);
-
-            compute_power_spectrum_audio_samples(
-                &audio_input_buffer[audio_iterator],
-                AUDIO_FRAME_LENGTH,
-                &power_spectrum_buffer[0],
-                POWER_SPECTRUM_BUFFER_LENGTH,
-                NULL,
-                0u,
-                HANN_WINDOW_SCALE_2048_BUFFER,
-                HANN_WINDOW_SCALE_2048_BUFFER_LENGTH
-            );
-
-            const float temp_max = compute_power_spectrum_into_mel_spectrogram(
-                &power_spectrum_buffer[0],
-                POWER_SPECTRUM_LENGTH,
-                &mel_spectrogram_buffer[mel_iterator],
-                N_FFT,
-                SAMPLING_RATE_PER_SECOND,
-                MAX_FREQUENCY,
-                N_MELS
-            );
-
-            if (temp_max > max_mel) {
-                max_mel = temp_max;
-            }
-        }
-
-        convert_power_to_decibel_and_scale(
-            mel_spectrogram_buffer,
-            shifted_buffer,
-            shifted_buffer_length,
-            max_mel);
-
-        /// If needed, clear the left and right side of shifted_buffer
-        #ifdef LEFT_PADDING
-        if (right_padding_length > 0) {
-            memset(
-                scale_mel_spectrogram_buffer,
-                0,
-                left_padding_length);
-            memset(
-                shifted_buffer + shifted_buffer_length,
-                0,
-                right_padding_length);
-        }
-        #endif // LEFT_PADDING
-    }
-
-    toggle_led(LED_GREEN);
-}
-#endif // LOAD_AUDIO_AND_PREPROCESS
 
 void
 app_setup(void) {
@@ -281,7 +72,7 @@ app_setup(void) {
     }
 
 #ifdef LOAD_AUDIO_AND_PREPROCESS
-    initialise_power_spectrum(N_FFT);
+    setup_preprocess(N_FFT);
 #endif // LOAD_AUDIO_AND_PREPROCESS
 
     printf("Audio input buffer length: %lu\r\n", INPUT_BUFFER_LENGTH);
@@ -295,8 +86,6 @@ app_setup(void) {
 
     /// Clear all the buffers
     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
-    memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
-    memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
     memset(scale_mel_spectrogram_buffer, 0, sizeof(scale_mel_spectrogram_buffer));
     memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
@@ -422,7 +211,7 @@ app_main_loop(void) {
                     class_id = atoi(class_id_string);
                     assert(class_id < NUM_CLASSES);
 
-                    #ifdef LOAD_AUDIO_AND_PREPROCESS
+                #ifdef LOAD_AUDIO_AND_PREPROCESS
 
                     // Copy audio into buffer
                     length_read = 0;
@@ -430,18 +219,21 @@ app_main_loop(void) {
                             audio_input_buffer,
                             sizeof(audio_input_buffer),
                             filepath);
+                    printf("Length read: %u\r\n", length_read);
+                    
+                    assert(length_read > 0 && length_read <= sizeof(audio_input_buffer));
                     current_state = APP_STATE_PREPROCESS;
-                    #else
+                #else
                     length_read = 0;
                     length_read = sd_card_read_from_file(
                             scale_mel_spectrogram_buffer,
                             sizeof(scale_mel_spectrogram_buffer),
                             filepath);
-                    current_state = APP_STATE_INFERENCE;
-                    #endif // LOAD_AUDIO_AND_PREPROCESS
-
                     printf("Length read: %u\r\n", length_read);
-                    assert(length_read > 0 && length_read <= sizeof(audio_input_buffer));
+
+                    current_state = APP_STATE_INFERENCE;
+                    assert(length_read > 0 && length_read <= sizeof(scale_mel_spectrogram_buffer));
+                #endif // LOAD_AUDIO_AND_PREPROCESS
                 }
                 assert(current_state != APP_STATE_READ_SD_CARD);
                 break;
@@ -449,7 +241,6 @@ app_main_loop(void) {
                 printf("APP_STATE_PREPROCESS\r\n");
 
 #ifdef LOAD_AUDIO_AND_PREPROCESS
-
                 uint32_t num_valid_audio_elements = length_read / sizeof(audio_data_type);
                 uint32_t num_frames_to_read = (num_valid_audio_elements / HOP_LENGTH - N_FFT / HOP_LENGTH) + 1;
 
@@ -458,9 +249,14 @@ app_main_loop(void) {
                     num_frames_to_read = NUM_FRAMES;
                 }
 
-                preprocess_buffer(NUM_PREPROCESS_ITERATIONS, num_frames_to_read);
-                // preprocess_buffer_measure_individual(NUM_PREPROCESS_ITERATIONS, num_frames_to_read);
-
+                preprocess(
+                    audio_input_buffer,
+                    INPUT_BUFFER_LENGTH,
+                    NUM_PREPROCESS_ITERATIONS,
+                    num_frames_to_read,
+                    scale_mel_spectrogram_buffer,
+                    MEL_SPECTROGRAM_BUFFER_LENGTH
+                );
 #endif // LOAD_AUDIO_AND_PREPROCESS
 
                 current_state = APP_STATE_INFERENCE;
@@ -487,7 +283,6 @@ app_main_loop(void) {
                     prediction_buffer,
                     PREDICTION_BUFFER_LENGTH
                 );
-                
 
                 int8_t best_result = -110;
                 uint16_t predicted_class_id = PREDICTION_BUFFER_LENGTH;
