@@ -200,6 +200,12 @@ project:
         - file: unit_tests/app/test_app_preprocess.h
         - file: unit_tests/app/test_app_preprocess.c
 
+        # constants - audio
+        - file: unit_tests/constants/audio/us8k_24074_1_0_2.h
+        - file: unit_tests/constants/audio/us8k_24074_1_0_2_power_spectrum.h
+        - file: unit_tests/constants/audio/us8k_24074_1_0_2_mel_spec.h
+        - file: unit_tests/constants/audio/us8k_24074_1_0_2_scaled_mel_spec.h
+
   output:
     base-name: $Project$
     type:
@@ -236,6 +242,10 @@ project:
     # app_preprocess
     - ../libs/app_preprocess/
 
+    # Constants
+    - unit_tests/constants/
+
+    # FatFS
     - ../libs/FatFS/
 
     # SD card
