@@ -14,7 +14,8 @@
         "vector": "c",
         "xstring": "c",
         "xtree": "c",
-        "iosfwd": "c"
+        "iosfwd": "c",
+        "sstream": "c"
     },
 
     "cmake.configureOnOpen": false,
