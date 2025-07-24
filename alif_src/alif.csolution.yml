@@ -63,7 +63,7 @@ solution:
   build-types:
     - type: debug
       optimize: speed
-      debug: off
+      debug: on
       define:
         - _DEBUG
     - type: release
