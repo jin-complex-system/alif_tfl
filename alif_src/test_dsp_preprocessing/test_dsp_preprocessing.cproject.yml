@@ -4,10 +4,8 @@ project:
     - group: App
       files:
         - file: main.c
-    - group: unit_tests
-      files:
-        - file: unit_tests/utils/test_square_root_approximation.h
-        - file: unit_tests/utils/test_square_root_approximation.c
+        - file: parameters.h
+      
     - group: Board
       files:
         - file: ../libs/board/devkit_gen2/board_init.c
@@ -16,18 +14,14 @@ project:
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
 
-    - group: sd_card
-      files:
-        - file: ../libs/sd_card/sd_card.h
-        - file: ../libs/sd_card/sd_card.c
     - group: dsp_preprocess
       files:
-        # # supporting library for dsp_preprocess
-        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.h
-        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.c
-        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
-        # - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
-        # - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
+        # supporting library for dsp_preprocess
+        - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.h
+        - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fft.c
+        - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.h
+        - file: ../libs/dsp_preprocessing/external/kissfft/kiss_fftr.c
+        - file: ../libs/dsp_preprocessing/external/kissfft/_kiss_fft_guts.h
 
         # utils
         - file: ../libs/dsp_preprocessing/utils/include/convert_complex.h
@@ -179,6 +173,33 @@ project:
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_0.h
         - file: ../libs/dsp_preprocessing/audio_dsp/include/precomputed_mel/mel_weights/mel_frequency_weights_mel_64_fft_2048_sr_44100_fmax_8000.h
 
+    - group: FatFS
+      files:
+        - file: ../libs/FatFS/diskio.h
+        - file: ../libs/FatFS/diskio.c
+        - file: ../libs/FatFS/ff.h
+        - file: ../libs/FatFS/ff.c
+        - file: ../libs/FatFS/ffconf.h
+        - file: ../libs/FatFS/ffsystem.c
+        - file: ../libs/FatFS/ffunicode.c
+
+    - group: sd_card
+      files:
+        - file: ../libs/sd_card/sd_card.h
+        - file: ../libs/sd_card/sd_card.c
+
+    - group: app_preprocess
+      files:
+        - file: ../libs/app_preprocess/app_preprocess.h
+        - file: ../libs/app_preprocess/app_preprocess.c
+
+    - group: unit_tests
+      files:
+        - file: unit_tests/utils/test_square_root_approximation.h
+        - file: unit_tests/utils/test_square_root_approximation.c
+        - file: unit_tests/app/test_app_preprocess.h
+        - file: unit_tests/app/test_app_preprocess.c
+
   output:
     base-name: $Project$
     type:
@@ -186,18 +207,13 @@ project:
       - bin
 
   add-path:
-    - .
     - ../board/
     - ../libs/board/
-    - ../libs/FatFS/
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
-
-    # SD card
-    - ../libs/sd_card
-
+    
     # # dsp_preprocess: supporting library for dsp_preprocess
-    # - ../libs/dsp_preprocessing/external/kissfft/
+    - ../libs/dsp_preprocessing/external/kissfft/
 
     # dsp_preprocess: utils
     - ../libs/dsp_preprocessing/utils/include/
@@ -216,6 +232,14 @@ project:
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_next_bin/
     - ../libs/audio_dsp/include/precomputed_mel/mel_centre_frequencies_prev_bin/
     - ../libs/audio_dsp/include/precomputed_mel/mel_weights/
+
+    # app_preprocess
+    - ../libs/app_preprocess/
+
+    - ../libs/FatFS/
+
+    # SD card
+    - ../libs/sd_card
 
   components:
     # needed for Alif Ensemble support
@@ -240,7 +264,7 @@ project:
     # - component: AlifSemiconductor::Device:SOC Peripherals:I3C
     # - component: AlifSemiconductor::Device:SOC Peripherals:LPI2C
     # - component: AlifSemiconductor::Device:SOC Peripherals:LPTIMER
-    # - component: AlifSemiconductor::Device:SOC Peripherals:MHU
+    - component: AlifSemiconductor::Device:SOC Peripherals:MHU
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI DSI CSI2 DPHY
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI CSI2
     # - component: AlifSemiconductor::Device:SOC Peripherals:MIPI DSI
@@ -249,7 +273,7 @@ project:
     # - component: AlifSemiconductor::Device:SOC Peripherals:PDM
     - component: AlifSemiconductor::Device:SOC Peripherals:PINCONF
     # - component: AlifSemiconductor::Device:SOC Peripherals:RTC
-    # - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
+    - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
     # - component: AlifSemiconductor::Device:SOC Peripherals:SPI
     - component: AlifSemiconductor::Device:SOC Peripherals:USART
     # - component: AlifSemiconductor::Device:SOC Peripherals:UTIMER
@@ -258,8 +282,8 @@ project:
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:core
     # - component: AlifSemiconductor::Device:OSPI FLASH XIP:utility
     # - component: AlifSemiconductor::Device:OSPI HYPERRAM XIP
-    # - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
-    # - component: AlifSemiconductor::Device:SE runtime Services:core&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:Initialization Helper&Source
+    - component: AlifSemiconductor::Device:SE runtime Services:core&Source
 
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor MT9M114
     # - component: AlifSemiconductor::BSP:External peripherals:CAMERA Sensor ARX3A0
