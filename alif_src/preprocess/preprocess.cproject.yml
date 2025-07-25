@@ -34,6 +34,8 @@ project:
         - file: ../libs/dsp_preprocessing/utils/src/log_approximation.c
         - file: ../libs/dsp_preprocessing/utils/include/square_root_approximation.h
         - file: ../libs/dsp_preprocessing/utils/src/square_root_approximation.c
+        - file: ../libs/dsp_preprocessing/utils/include/transpose_buffer.h
+        - file: ../libs/dsp_preprocessing/utils/src/transpose_buffer.c
 
         # statistics
         - file: ../libs/dsp_preprocessing/statistics/include/statistics.h
