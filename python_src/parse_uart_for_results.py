@@ -147,10 +147,16 @@ def _main(
 if __name__ == '__main__':
     import os
 
-    urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre")
+    urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre_no_NPU")
     _main(output_directory=urbansound_directory)
 
-    # orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre")
-    # _main(output_directory=orbiwise_directory)
+    urbansound_directory = os.path.join("_my_results", "Urbansound_HE_Pre_NPU")
+    _main(output_directory=urbansound_directory)
+
+    orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre_no_NPU")
+    _main(output_directory=orbiwise_directory)
+    
+    orbiwise_directory = os.path.join("_my_results", "Orbiwise_HE_Pre_NPU")
+    _main(output_directory=orbiwise_directory)
 
     print("Done")
