@@ -42,8 +42,8 @@ typedef int32_t audio_data_type;
 #define MEL_SPECTROGRAM_BUFFER_LENGTH       (N_MELS * NUM_FRAMES)
 
 /// Misc
-#define NUM_PREPROCESS_ITERATIONS           1
-#define NUM_INFERENCE_ITERATIONS            1
+#define NUM_PREPROCESS_ITERATIONS           10
+#define NUM_INFERENCE_ITERATIONS            10
 
 #define CROPPED_NUM_FRAMES                  384
 #define CROPPED_MEL_SPEC_BUFFER_LENGTH      (N_MELS * CROPPED_NUM_FRAMES)
