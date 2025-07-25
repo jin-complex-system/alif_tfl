@@ -266,6 +266,7 @@ app_main_loop(void) {
                 memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
                 memset(model_input_buffer, 0, sizeof(model_input_buffer));
 
+                toggle_led(LED_GREEN);
                 preprocess(
                     audio_input_buffer,
                     INPUT_BUFFER_LENGTH,
@@ -278,6 +279,7 @@ app_main_loop(void) {
                     model_input_buffer,
                     MEL_SPECTROGRAM_BUFFER_LENGTH
                 );
+                toggle_led(LED_GREEN);
 #endif // LOAD_AUDIO_AND_PREPROCESS
 
                 current_state = APP_STATE_INFERENCE;
