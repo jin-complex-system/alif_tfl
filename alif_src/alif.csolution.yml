@@ -28,7 +28,7 @@ solution:
     - type: HE
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HE
       define:
-        - "CORE_M55_HE" # Select HP core
+        - "CORE_M55_HE" # Select HE core
         - ETHOSU55      # Select Ethos U55
 
         # NPU configuration for MRAM

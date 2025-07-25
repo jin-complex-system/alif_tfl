@@ -424,6 +424,7 @@ project:
 
 8. Copy the memory configuration from [`alif-e7-m55-he.ld`](https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/kws/linker/alif-e7-m55-he.ld) to [`preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld`](alif_tfl/preprocess/RTE/Device/AE722F80F55D5LS_M55_HE/gcc_M55_HE.ld)
 - Add and remove buffers as needed in `.bss.at_sram0`
+- TODO: Refer to [alif-e7-m55-hp.ld](https://github.com/alifsemi/alif_mlek-cmsis-examples/blob/main/object-detection/linker/alif-e7-m55-hp.ld) for HE core, and implement a working example
 
 9. Add/modify the following local drivers and modules:
 - [inference](/libs/inference/)
