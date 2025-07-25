@@ -335,9 +335,20 @@ if __name__ == '__main__':
     urbansound_negative_ids = [6]
     urbansound_num_classes = len(urbansound_labels)
 
+    # No NPU version
+    urbansound_no_NPU_directory = "{}_no_NPU".format(urbansound_directory)
     _main(
-        target_directory=urbansound_directory,
-        output_directory=os.path.join(urbansound_directory, "fig"),
+        target_directory=urbansound_no_NPU_directory,
+        output_directory=os.path.join(urbansound_no_NPU_directory, "fig"),
+        num_classes=urbansound_num_classes,
+        negative_ids=urbansound_negative_ids,
+        labels=urbansound_labels,
+    )
+    # NPU version
+    urbansound_NPU_directory = "{}_NPU".format(urbansound_directory)
+    _main(
+        target_directory=urbansound_NPU_directory,
+        output_directory=os.path.join(urbansound_NPU_directory, "fig"),
         num_classes=urbansound_num_classes,
         negative_ids=urbansound_negative_ids,
         labels=urbansound_labels,
@@ -368,9 +379,21 @@ if __name__ == '__main__':
     orbiwise_negative_ids = [19]
     orbiwise_num_classes = 20
 
+    # No NPU version
+    orbiwise_no_NPU_directory = "{}_no_NPU".format(orbiwise_directory)
     _main(
-        target_directory=orbiwise_directory,
-        output_directory=os.path.join(orbiwise_directory, "fig"),
+        target_directory=orbiwise_no_NPU_directory,
+        output_directory=os.path.join(orbiwise_no_NPU_directory, "fig"),
+        num_classes=orbiwise_num_classes,
+        negative_ids=orbiwise_negative_ids,
+        labels=orbiwise_labels,
+    )
+
+    # NPU version
+    orbiwise_NPU_directory = "{}_NPU".format(orbiwise_directory)
+    _main(
+        target_directory=orbiwise_NPU_directory,
+        output_directory=os.path.join(orbiwise_NPU_directory, "fig"),
         num_classes=orbiwise_num_classes,
         negative_ids=orbiwise_negative_ids,
         labels=orbiwise_labels,
