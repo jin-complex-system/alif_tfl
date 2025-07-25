@@ -46,7 +46,7 @@ typedef int32_t audio_data_type;
 
 #define CROPPED_NUM_FRAMES                  384
 #define CROPPED_MEL_SPEC_BUFFER_LENGTH      (N_MELS * CROPPED_NUM_FRAMES)
-#define LEFT_PADDING                        1
+// #define LEFT_PADDING                        1
 
 
 #endif // PARAMETERS_H

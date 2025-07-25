@@ -19,16 +19,26 @@
 static APP_STATE
 current_state = APP_STATE_INIT;
 
-/// Audio DSP
 #define INPUT_BUFFER_LENGTH AUDIO_BUFFER_MINIMUM_LENGTH
+static
 audio_data_type
 audio_input_buffer[INPUT_BUFFER_LENGTH] __attribute__((aligned(16)));
 
-inference_input_data_type
-scale_mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
+static
+float
+power_spectrum_buffer[POWER_SPECTRUM_BUFFER_LENGTH] __attribute__((aligned(16)));
+
+static
+float
+mel_spectrogram_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
+
+static
+uint8_t
+model_input_buffer[MEL_SPECTROGRAM_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 #define PREDICTION_BUFFER_LENGTH        NUM_CLASSES
-inference_output_data_type
+static
+int8_t
 prediction_buffer[PREDICTION_BUFFER_LENGTH] __attribute__((aligned(16)));
 
 void
@@ -86,7 +96,9 @@ app_setup(void) {
 
     /// Clear all the buffers
     memset(audio_input_buffer, 0, sizeof(audio_input_buffer));
-    memset(scale_mel_spectrogram_buffer, 0, sizeof(scale_mel_spectrogram_buffer));
+    memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
+    memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+    memset(model_input_buffer, 0, sizeof(model_input_buffer));
     memset(prediction_buffer, 0, sizeof(prediction_buffer));
 
     turn_on_led(LED_RED);
@@ -226,13 +238,13 @@ app_main_loop(void) {
                 #else
                     length_read = 0;
                     length_read = sd_card_read_from_file(
-                            scale_mel_spectrogram_buffer,
-                            sizeof(scale_mel_spectrogram_buffer),
+                            model_input_buffer,
+                            sizeof(model_input_buffer),
                             filepath);
                     printf("Length read: %u\r\n", length_read);
 
                     current_state = APP_STATE_INFERENCE;
-                    assert(length_read > 0 && length_read <= sizeof(scale_mel_spectrogram_buffer));
+                    assert(length_read > 0 && length_read <= sizeof(model_input_buffer));
                 #endif // LOAD_AUDIO_AND_PREPROCESS
                 }
                 assert(current_state != APP_STATE_READ_SD_CARD);
@@ -249,12 +261,21 @@ app_main_loop(void) {
                     num_frames_to_read = NUM_FRAMES;
                 }
 
+                /// Clear buffers
+                memset(power_spectrum_buffer, 0, sizeof(power_spectrum_buffer));
+                memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+                memset(model_input_buffer, 0, sizeof(model_input_buffer));
+
                 preprocess(
                     audio_input_buffer,
                     INPUT_BUFFER_LENGTH,
+                    power_spectrum_buffer,
+                    POWER_SPECTRUM_BUFFER_LENGTH,
+                    mel_spectrogram_buffer,
+                    MEL_SPECTROGRAM_BUFFER_LENGTH,
                     NUM_PREPROCESS_ITERATIONS,
                     num_frames_to_read,
-                    scale_mel_spectrogram_buffer,
+                    model_input_buffer,
                     MEL_SPECTROGRAM_BUFFER_LENGTH
                 );
 #endif // LOAD_AUDIO_AND_PREPROCESS
@@ -268,7 +289,7 @@ app_main_loop(void) {
 
                 assert(CROPPED_MEL_SPEC_BUFFER_LENGTH <= MEL_SPECTROGRAM_BUFFER_LENGTH);
                 inference_tf_set_input(
-                    scale_mel_spectrogram_buffer,
+                    model_input_buffer,
                     CROPPED_MEL_SPEC_BUFFER_LENGTH
                 );
 

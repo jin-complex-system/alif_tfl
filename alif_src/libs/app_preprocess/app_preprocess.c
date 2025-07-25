@@ -2,8 +2,9 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 
-#include <hann_window_scale_2048.h>
+#include <precomputed_window/hann_window/hann_window_scale_2048.h>
 #include <audio_dsp_fft.h>
 #include <power_spectrum.h>
 #include <mel_spectrogram.h>
@@ -13,6 +14,10 @@ void
 preprocess(
     const int16_t* audio_input_buffer,
     uint32_t audio_input_buffer_length,
+    float* power_spectrum_buffer,
+    const uint32_t power_spectrum_buffer_length,
+    float* mel_spectrogram_buffer,
+    const uint32_t mel_spectrogram_buffer_length,
     const uint16_t num_iterations,
     const uint32_t num_frames_to_read,
     uint8_t* output_buffer,
@@ -66,6 +71,7 @@ preprocess(
 
             for (uint32_t frame_iterator = 0; frame_iterator < num_frames_process; frame_iterator++) {
                 const uint32_t audio_iterator = frame_iterator * HOP_LENGTH;
+                const uint32_t power_spectrum_iterator = 0;
                 const uint32_t mel_iterator = frame_iterator * N_MELS;
 
                 assert(audio_iterator < audio_input_buffer_length);
@@ -73,7 +79,7 @@ preprocess(
                 compute_power_spectrum_audio_samples(
                     &audio_input_buffer[audio_iterator],
                     AUDIO_FRAME_LENGTH,
-                    &power_spectrum_buffer[0],
+                    &power_spectrum_buffer[power_spectrum_iterator],
                     POWER_SPECTRUM_BUFFER_LENGTH,
                     NULL,
                     0u,
@@ -82,7 +88,7 @@ preprocess(
                 );
 
                 const float temp_max = compute_power_spectrum_into_mel_spectrogram(
-                    &power_spectrum_buffer[0],
+                    &power_spectrum_buffer[power_spectrum_iterator],
                     POWER_SPECTRUM_LENGTH,
                     &mel_spectrogram_buffer[mel_iterator],
                     N_FFT,
