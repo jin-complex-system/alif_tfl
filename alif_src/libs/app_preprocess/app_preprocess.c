@@ -9,6 +9,7 @@
 #include <power_spectrum.h>
 #include <mel_spectrogram.h>
 #include <power_to_decibel.h>
+#include <transpose_buffer.h>
 
 void
 preprocess(
@@ -122,5 +123,19 @@ preprocess(
             }
             #endif // LEFT_PADDING
         }
+
+        /// Transpose output_buffer
+        memset(mel_spectrogram_buffer, 0, sizeof(mel_spectrogram_buffer));
+        uint8_t* temp_buffer = (uint8_t*)mel_spectrogram_buffer;
+
+        memcpy(temp_buffer, output_buffer, sizeof(output_buffer));
+
+        transpose_buffer(
+            temp_buffer,
+            output_buffer,
+            NUM_FRAMES,
+            N_MELS
+        );
+
 #endif // LOAD_AUDIO_AND_PREPROCESS
 }
