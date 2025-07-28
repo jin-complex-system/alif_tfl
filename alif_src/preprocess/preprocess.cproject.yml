@@ -216,12 +216,14 @@ project:
         - file: ../libs/sd_card/sd_card.h
         - file: ../libs/sd_card/sd_card.c
 
-    - group: HE_models
+    - group: models
       files:
-        - file: ../HE_models/model_orbw_19_Q_HE_vela.h
-        - file: ../HE_models/model_orbw_19_Q_HE.h
-        - file: ../HE_models/model_us_Q_HE_vela.h
-        - file: ../HE_models/model_us_Q_HE.h
+        - file: ../models/model_orbw_19_Q_HE_vela.h
+        - file: ../models/model_orbw_19_Q_HP_vela.h
+        - file: ../models/model_orbw_19_Q.h
+        - file: ../models/model_us_Q_HE_vela.h
+        - file: ../models/model_us_Q_HP_vela.h
+        - file: ../models/model_us_Q.h
 
   output:
     base-name: $Project$
@@ -252,7 +254,7 @@ project:
     - ../libs/sd_card
 
     # Models
-    - ../HE_models
+    - ../models
 
     # # dsp_preprocess: supporting library for dsp_preprocess
     # - ../libs/dsp_preprocessing/external/kissfft/
