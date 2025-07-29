@@ -3,6 +3,7 @@ project:
   groups:
     - group: App
       files:
+        - file: parameters.h
         - file: app/app.h
         - file: app/app.c
         - file: main.c
@@ -14,18 +15,51 @@ project:
         - file: ../libs/common_app_utils/logging/uart_tracelib.c
         - file: ../libs/common_app_utils/logging/retarget.c
         - file: ../libs/common_app_utils/fault_handler/fault_handler.c
+
     - group: inference
       files:
         - file: ../libs/inference/inference_definitions.h
+        - file: ../libs/inference/inference_model.h
+        - file: ../libs/inference/inference_model_HE.h
+        - file: ../libs/inference/inference_model_HP.h
         - file: ../libs/inference/inference_tf.h
         - file: ../libs/inference/inference_tf.cpp
+
     - group: led
       files:
         - file: ../libs/led/led.h
         - file: ../libs/led/led.c
+
+    - group: FatFS
+      files:
+        - file: ../libs/FatFS/diskio.h
+        - file: ../libs/FatFS/diskio.c
+        - file: ../libs/FatFS/ff.h
+        - file: ../libs/FatFS/ff.c
+        - file: ../libs/FatFS/ffconf.h
+        - file: ../libs/FatFS/ffsystem.c
+        - file: ../libs/FatFS/ffunicode.c
+
+    - group: sd_card
+      files:
+        - file: ../libs/sd_card/sd_card.h
+        - file: ../libs/sd_card/sd_card.c
+
     - group: models
       files:
-        - file: ../models/model_orbw_19_Q_HE_vela.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q_HE_vela.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q_HP_vela.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q_HE_vela.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q_HP_vela.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q.h
+
+        - file: ../models/models_librosa/model_orbw_19_Q_HE_vela.h
+        - file: ../models/models_librosa/model_orbw_19_Q_HP_vela.h
+        - file: ../models/models_librosa/model_orbw_19_Q.h
+        - file: ../models/models_librosa/model_us_Q_HE_vela.h
+        - file: ../models/models_librosa/model_us_Q_HP_vela.h
+        - file: ../models/models_librosa/model_us_Q.h
         
     - group: npu_driver
       files:
@@ -42,21 +76,26 @@ project:
     - .
     - ../board/
     - ../libs/board/
-    - ../libs/FatFS/
+    
     - ../libs/common_app_utils/logging
     - ../libs/common_app_utils/fault_handler
 
     # inference
     - ../libs/inference
 
+    # NPU driver
+    - ../libs/npu_driver/include/
+
+    - ../libs/FatFS/
+
     # LED
     - ../libs/led
 
+    # SD card
+    - ../libs/sd_card
+
     # Models
     - ../models
-
-    # NPU driver
-    - ../libs/npu_driver/include/
 
   components:
     # needed for Alif Ensemble support
@@ -90,7 +129,7 @@ project:
     # - component: AlifSemiconductor::Device:SOC Peripherals:PDM
     - component: AlifSemiconductor::Device:SOC Peripherals:PINCONF
     # - component: AlifSemiconductor::Device:SOC Peripherals:RTC
-    # - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
+    - component: AlifSemiconductor::Device:SOC Peripherals:SDMMC
     # - component: AlifSemiconductor::Device:SOC Peripherals:SPI
     - component: AlifSemiconductor::Device:SOC Peripherals:USART
     # - component: AlifSemiconductor::Device:SOC Peripherals:UTIMER

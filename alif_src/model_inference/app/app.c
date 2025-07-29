@@ -1,10 +1,15 @@
 #include "app.h"
 
+#include <parameters.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <sd_card.h>
+#include <ff.h>
 #include <led.h>
 #include <inference_tf.h>
+#include <inference_model.h>
 #include <npu_driver.h>
 
 void
@@ -26,8 +31,15 @@ app_setup(void) {
 #endif // ARM_NPU
 
     setup_led();
-
     inference_tf_setup();
+
+    printf("Setting up SD card\r\n");
+    if (!sd_card_setup()) {
+        printf("Failed to setup SD card\r\n");
+    }
+    else {
+        printf("Sucessfully setup SD card\r\n");
+    }
 
     turn_on_led(LED_BLUE);
 }
@@ -37,7 +49,7 @@ app_main_loop(void) {
     printf("app_main_loop()\r\n");
 
     while(true) {
-        inference_tf_predict();
+        inference_tf_predict(NUM_INFERENCE_ITERATIONS);
         toggle_led(LED_GREEN);
     }
 }
