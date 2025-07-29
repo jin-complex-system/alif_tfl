@@ -3,8 +3,13 @@
 
 #include <stdint.h>
 
+/// User parameters
+
 // #define LOAD_AUDIO_AND_PREPROCESS           1
 // #define SAVE_RESULT_TO_SD_CARD              1 
+
+#define NUM_PREPROCESS_ITERATIONS           1
+#define NUM_INFERENCE_ITERATIONS            1
 
 /// Varying parameters
 #define AUDIO_SAMPLE_DATA_BITS              16
@@ -40,10 +45,6 @@ typedef int32_t audio_data_type;
 /// Buffer parameters
 #define MEL_SPECTROGRAM_INPUT_SIZE          (AUDIO_FRAME_LENGTH * 2)
 #define MEL_SPECTROGRAM_BUFFER_LENGTH       (N_MELS * NUM_FRAMES)
-
-/// Misc
-#define NUM_PREPROCESS_ITERATIONS           10
-#define NUM_INFERENCE_ITERATIONS            10
 
 #define CROPPED_NUM_FRAMES                  384
 #define CROPPED_MEL_SPEC_BUFFER_LENGTH      (N_MELS * CROPPED_NUM_FRAMES)

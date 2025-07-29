@@ -1,4 +1,4 @@
-# alif_src
+# alif_tfl
 
 # How to setup the project with Visual Studio Code
 
@@ -8,3 +8,7 @@
 ```bash
 git submodule update --init --recursive
 ```
+
+# Project Directories
+- [`alif_src`](alif_src): VSCode Project for deployment on Alif Ensemble Dev Kit
+- [`python_src`](python_src): Python helper scripts
