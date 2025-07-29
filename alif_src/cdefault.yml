@@ -8,10 +8,11 @@ default:
         # - -ffp-mode=fast
         - -DDISABLEFLOAT16=1
         - -DCOPY_VECTORS=1
+        - -O3
 
       # If needed, comment out so we can observe exceptions/errors
       CPP:
-        - -std=c++14
+        - -std=c++17
         - -fno-exceptions
         - -fno-unwind-tables
         - -fno-rtti
