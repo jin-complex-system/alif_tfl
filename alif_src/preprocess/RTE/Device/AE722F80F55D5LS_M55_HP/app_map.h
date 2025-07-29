@@ -11,11 +11,13 @@
 #ifndef APP_MAP_H
 #define APP_MAP_H
 
+#define _APP_MAX_SIZE_HE_HP_CORE        0x200000
+
 /* Max size of applications for each core;
  * User shall adjust this based on app need.
  */
-#define _APP_MAX_SIZE_HE                 0x200000
-#define _APP_MAX_SIZE_HP                 0x200000
+#define _APP_MAX_SIZE_HE                 _APP_MAX_SIZE_HE_HP_CORE
+#define _APP_MAX_SIZE_HP                 _APP_MAX_SIZE_HE_HP_CORE
 
 /* Define the below flag as 1 to support booting from
  * OSPI flash.
