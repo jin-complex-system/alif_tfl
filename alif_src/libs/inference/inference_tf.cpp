@@ -1,5 +1,6 @@
 #include "inference_tf.h"
 #include "inference_definitions.h"
+#include "inference_model.h"
 
 #ifdef USE_TENSORFLOW
 #include <tensorflow/lite/micro/kernels/micro_ops.h>
@@ -30,13 +31,8 @@ s_interpreter = nullptr;
 constexpr uint32_t
 kTensorArenaSize = 800u * 1024u;
 
-#ifdef TENSORARENA_NONCACHE
-static uint8_t
-s_tensorArena[kTensorArenaSize] __ALIGNED(16) __attribute__((section("NonCacheable")));
-#else
 static uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
-#endif // TENSORARENA_NONCACHE
 
 static
 tflite::MicroMutableOpResolver<27> s_microOpResolver; // NOLINT

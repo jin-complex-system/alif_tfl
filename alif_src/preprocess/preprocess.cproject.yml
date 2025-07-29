@@ -180,6 +180,9 @@ project:
     - group: inference
       files:
         - file: ../libs/inference/inference_definitions.h
+        - file: ../libs/inference/inference_model.h
+        - file: ../libs/inference/inference_model_HE.h
+        - file: ../libs/inference/inference_model_HP.h
         - file: ../libs/inference/inference_tf.h
         - file: ../libs/inference/inference_tf.cpp
 
@@ -218,12 +221,19 @@ project:
 
     - group: models
       files:
-        - file: ../models/model_orbw_19_Q_HE_vela.h
-        - file: ../models/model_orbw_19_Q_HP_vela.h
-        - file: ../models/model_orbw_19_Q.h
-        - file: ../models/model_us_Q_HE_vela.h
-        - file: ../models/model_us_Q_HP_vela.h
-        - file: ../models/model_us_Q.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q_HE_vela.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q_HP_vela.h
+        - file: ../models/models_dsp_preprocessing/model_orbw_19_Q.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q_HE_vela.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q_HP_vela.h
+        - file: ../models/models_dsp_preprocessing/model_us_Q.h
+
+        - file: ../models/models_librosa/model_orbw_19_Q_HE_vela.h
+        - file: ../models/models_librosa/model_orbw_19_Q_HP_vela.h
+        - file: ../models/models_librosa/model_orbw_19_Q.h
+        - file: ../models/models_librosa/model_us_Q_HE_vela.h
+        - file: ../models/models_librosa/model_us_Q_HP_vela.h
+        - file: ../models/models_librosa/model_us_Q.h
 
   output:
     base-name: $Project$

@@ -8,12 +8,15 @@
 
 #include <parameters.h>
 
+#ifdef LOAD_AUDIO_AND_PREPROCESS
 #include <app_preprocess.h>
+#endif // LOAD_AUDIO_AND_PREPROCESS
 
 #include <sd_card.h>
 #include <ff.h>
 #include <led.h>
 #include <inference_tf.h>
+#include <inference_model.h>
 #include <npu_driver.h>
 
 static APP_STATE
