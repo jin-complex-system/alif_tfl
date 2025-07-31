@@ -508,6 +508,7 @@ project:
 10. Modify the [`npu_definitions.h`](/libs/npu_driver/include/npu_definitions.h) to adjust the NPU configuration if needed
 
 11. Add [models](models) and update the relevant `.yml` files
+- If needed, quanitise the model using [convert_using_eIQ_toolkit.md](convert_using_eIQ_toolkit.md)
 
 12. See [Known Issues](#known-issues) for any issues during building process
 

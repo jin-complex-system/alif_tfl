@@ -29,6 +29,7 @@ To re-create the project from scratch, see [`recreate_new_project_from_blinky.md
 
 1. If necessary, update the [models](/models/)
 - Note that current builds only support the HE core at the moment
+- If needing to quantise the model, use [quantise_using_eIQ_toolkit.md](/docs/quantise_using_eIQ_toolkit.md)
 - Make sure the model array is `nn_model[]` like the following format:
 ```C
 #ifndef MODEL_DATA_H
@@ -64,11 +65,13 @@ add_operators(void) {
     - Comment in `#define SAVE_RESULT_TO_SD_CARD           1` if you want to save the predicted results into the SD card
     - Adjust `NUM_PREPROCESS_ITERATIONS` for the number of preprocess iterations
     - Adjust `NUM_INFERENCE_ITERATIONS` for the number of inference iterations
+
 3. Navigate to [`inference_parameters.h](/libs/inference/inference_definitions.h) and determine which parameters need to be configure:
     - Comment out `#define USE_NPU_MODEL               1` if you want to not use the NPU-version of the model
     - Comment out `#define USE_MODELS_DSP_PREPROCESSING    1` if you use librosa's preprocessing version
     - Comment out `#define USE_ORBIWISE                    1` if you to use Urbansound8K model
     - Adjust changes to reflect the new model(s) if relevant
+
 4. Insert a SD card with the following directories created:
     - Audio
         - `ub_audio` - audio data (16-bit signed audio) for Urbansound8K
@@ -80,12 +83,17 @@ add_operators(void) {
         - `ub_owP` - Output for Urbansound8K preprocessed predictions
         - `ow_pre` - for preprocessed audio data (8-bit unsigned mel spectrogram) for Orbiwise
         - `out_owP` - Output for Orbiwise preprocessed predictions
+
 5. [Program the Alif Ensemble Dev Kit](#how-to-program-on-visual-studio-code)
+
 6. Check the UART output
+
 7. To measure timing, measure the following LED lights:
     - Green LED light toggles between preprocessing
     - Blue LED light toggles between inference
+    
 8. When it is done, grab the output files from the SD card
+
 9. If necessary, conduct post-processing of using [Python scripts](../python_src/README.md)
 
 # Model_inference Project
