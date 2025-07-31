@@ -1,16 +1,37 @@
 # Summary
 
-Collection of Python scripts that run in host's WSL.
+Collection of Python scripts that run in host's Windows and WSL.
 
 Since tensorflow no longer exists in Windows, we have to run our Python scripts in WSL.
 
 # Setup
 
-## WSL Setup
+## Setup (for both Windows and WSL)
 
-Follow the instructions in [StackOverflow](https://askubuntu.com/a/1508361) to expose the COM ports to WSL2. Note that the device is most likely a USB serial adaptor (check by disconnecting and connecting)
+1. Clone the git repository inside your WSL and navigate into the Python script directory
+```bash
+git clone https://github.com/jin-complex-system/alif_tfl
+cd alif_tfl/python_src
+```
 
-Console from Windows PowerShell:
+2. Active Python virtual environment
+```bash
+mkdir venv
+python -m venv venv/.
+chmod +777 venv/bin/activate
+source venv/bin/activate
+```
+
+3. Install necessary requirements if needed
+```bash
+pip install -r requirements.txt
+```
+
+## WSL Setup for COM port exposure
+
+1. Follow the instructions in [StackOverflow](https://askubuntu.com/a/1508361) to expose the COM ports to WSL2. Note that the device is most likely a USB serial adaptor (check by disconnecting and connecting)
+
+    - Console from Windows PowerShell:
 ```bash
 PS C:\WINDOWS\system32> usbipd list
 Connected:
@@ -44,13 +65,13 @@ usbipd: info: Using IP address 192.168.176.1 to reach the host.
 PS C:\WINDOWS\system32>
 ```
 
-Console output from WSL:
+- Console output from WSL:
 ```bash
 csi_3@CSIDEV3:~$ ls /dev/ttyACM*
 /dev/ttyACM0  /dev/ttyACM1
 ```
 
-To detach the COM port, run the following in the Windows Powershell:
+2. To detach the COM port, run the following in the Windows Powershell:
 ```bash
 PS C:\WINDOWS\system32> usbipd detach --busid 1-5
 PS C:\WINDOWS\system32> usbipd list
@@ -68,28 +89,10 @@ GUID                                  DEVICE
 PS C:\WINDOWS\system32>
 ```
 
-## Running Python to grab output from SD card
-
-1. Clone the git repository inside your WSL and navigate into the Python script directory
-```bash
-git clone https://github.com/jin-complex-system/alif_tfl
-cd alif_tfl/python_src
-```
-2. Active Python virtual environment
-```bash
-mkdir venv
-python -m venv venv/.
-chmod +777 venv/bin/activate
-source venv/bin/activate
-```
-3. Install necessary requirements if needed
-```bash
-pip install -r requirements.txt
-```
-
-# Python scripts
+# Python scripts on Windows
 
 ## Parse Output from SD card
+
 1. To parse output from the SD card, copy the output directory to `python_src`:
 ```bash
 cp -r <sd_card_location>/out_A <alif_tfl_repo_path>/python_src
@@ -103,4 +106,17 @@ cd _my_results
 ```
 
 ## Parse Output from UART
-TODO:
+
+1. Run [`parse_uart_for_results.py`](parse_uart_for_results.py) and read the output directory
+```bash
+python3 parse_uart_for_results.py
+cd _my_results
+```
+
+# Python scripts on WSL
+
+## Export results
+
+1. Copy directories to WSL
+2. Inside `exports_outputs.py`, change the output directory if needed
+3. Run [`export_results.py`](export_outputs.py)

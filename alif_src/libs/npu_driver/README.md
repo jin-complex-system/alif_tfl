@@ -10,7 +10,9 @@ High-level NPU driver to interface with NPU and Ethos-U55 to allow NPU functiona
 
 # Files
 
-- [`include/NPU_definitions.h`](include/NPU_definitions.h)
+- [`include/NPU_definitions.h`](include/NPU_definitions.h): NPU driver definitions
+- [`include/NPU_definitions_he.h`](include/NPU_definitions_he.h): NPU definitions for HE core 
+- [`include/NPU_definitions_hp.h`](include/NPU_definitions_hp.h): NPU definitions for HE core 
 - [`include/NPU_driver.h`](include/NPU_driver.h)
 - [`src/npu_driver.c`](src/npu_driver.c)
 

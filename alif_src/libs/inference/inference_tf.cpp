@@ -29,11 +29,13 @@ s_interpreter = nullptr;
 /// An area of memory to use for input, output, and intermediate arrays.
 /// (Can be adjusted based on the model needs.)
 constexpr uint32_t
-kTensorArenaSize = 800u * 1024u;
+kTensorArenaSize = 800u * 1024u; // hard-coded;
+// TODO: Use tflite::RecordingMicroInterpreter to determine actual kTensorArenaSize
 
 static uint8_t
 s_tensorArena[kTensorArenaSize] __attribute__((aligned(16)));
 
+/// Number of operators
 static
 tflite::MicroMutableOpResolver<27> s_microOpResolver; // NOLINT
 
